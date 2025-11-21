@@ -52,7 +52,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isExpanded, onTo
         </div>
 
         <div className="flex justify-between items-start mb-4">
-           <h3 className="text-2xl md:text-3xl font-bold text-black tracking-tight uppercase pr-4 whitespace-pre-line">{course.title}</h3>
+           <h3 className={`text-2xl md:text-3xl font-bold tracking-tight uppercase pr-4 whitespace-pre-line transition-colors duration-300 ${isExpanded ? 'text-[#D13627]' : 'text-black'}`}>
+             {course.title}
+           </h3>
            <div className={isExpanded ? "text-[#D13627]" : "text-gray-400"}>{course.icon}</div>
         </div>
         
@@ -61,31 +63,36 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isExpanded, onTo
         </p>
 
         {/* Expanded Content */}
-        <div className={`grid transition-all duration-500 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100 mt-8 pt-8 border-t border-gray-200' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+        <div 
+          className={`transition-all duration-500 ease-in-out ${isExpanded ? 'grid grid-rows-[1fr] opacity-100 mt-8 pt-8 border-t border-black bg-[#111111]' : 'grid grid-rows-[0fr] opacity-0 mt-0 bg-white'}`}
+        >
           <div className="overflow-hidden">
-            <div className="grid grid-cols-1 gap-0 border border-gray-200 bg-gray-50">
+            <div className="grid grid-cols-1 gap-0 border-none bg-transparent">
               {course.levels.map((level, idx) => (
                 <div 
                   key={level.name}
                   onClick={(e) => handleLevelClick(e, level.name)}
                   className={`
-                    group relative p-6
-                    ${idx !== 0 ? 'border-t border-gray-200' : ''}
-                    ${activeLevel === level.name 
-                      ? 'bg-black text-white' 
-                      : 'bg-white hover:bg-gray-100 text-black'}
+                    group relative p-6 border-t border-white/10
+                    ${idx === 0 ? 'border-t-0' : ''}
+                    ${activeLevel === level.name ? '' : 'hover:bg-[#D13627]'}
                   `}
                 >
                   <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-bold uppercase tracking-wide text-sm">
+                    <h4 className="font-bold uppercase tracking-wide text-sm text-white">
                       {level.name}
                     </h4>
+                    {/* Dot Indicator logic: 
+                        - Active: Red
+                        - Inactive: Gray
+                        - Hover: White
+                    */}
                     {activeLevel === level.name ? 
                       <div className="w-2 h-2 bg-[#D13627]" /> : 
-                      <div className="w-2 h-2 bg-gray-300 group-hover:bg-black transition-colors duration-150" />
+                      <div className="w-2 h-2 bg-gray-600 group-hover:bg-white" />
                     }
                   </div>
-                  <p className={`text-[10px] uppercase tracking-widest mb-6 ${activeLevel === level.name ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <p className="text-[10px] uppercase tracking-widest mb-6 text-gray-400 group-hover:text-white/90">
                     {level.label}
                   </p>
                   
@@ -93,8 +100,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isExpanded, onTo
                   <div className={`overflow-hidden ${activeLevel === level.name ? 'block' : 'hidden'}`}>
                     <ul className="space-y-2 pt-4 border-t border-white/20">
                       {level.syllabus.map((item, idx) => (
-                        <li key={idx} className="text-xs font-mono leading-tight flex items-start gap-2">
-                          <span className="text-[#D13627] flex-shrink-0">{'>'}</span>
+                        <li key={idx} className="text-xs font-mono leading-tight flex items-start gap-2 text-white">
+                          <span className="text-[#D13627] flex-shrink-0 group-hover:text-white">{'>'}</span>
                           {item}
                         </li>
                       ))}

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Terminal, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
 
 export const AICard: React.FC = () => {
@@ -58,22 +59,39 @@ export const AICard: React.FC = () => {
         `Course: ${c.title.replace('\n', ' ')} (${c.category})\nDescription: ${c.description}\nLevels: ${c.levels.map(l => l.name).join(', ')}`
       ).join('\n---\n');
 
-      const allowedDomains = Array.from(new Set(COURSES_DATA.map(c => `${c.category} (${c.section})`))).join(", ");
-
       const prompt = `
         You are the "Training Days" Curated Curriculum Engine, managed by Joe Nasr.
         
-        STRICT CONTENT FILTER:
-        The user requested topic is: "${topic}".
-        First, analyze if this topic falls within the scope of these professional domains: ${allowedDomains}.
-        These domains cover Creative Tech, Design, VR, 3D Motion, Business Automation, and Video Production.
+        CRITICAL INSTRUCTION: STRICT TOPIC VALIDATION.
+        The user has requested a syllabus for: "${topic}".
+        
+        You must verify if this topic belongs to the SPECIFIC curriculum catalog of Joe Nasr, which focuses EXCLUSIVELY on Creative Technology, Design, and Media Production.
+        
+        AUTHORIZED DOMAINS (STRICTLY LIMITED TO):
+        1. MEDIA PRODUCTION (Video Editing, Filmmaking, DaVinci Resolve, Premiere Pro, Integrated Digital Media)
+        2. DESIGN & GRAPHICS (Adobe Photoshop, Illustrator, InDesign, Visual Communication, Branding, UI/UX, Figma)
+        3. 3D & MOTION (Cinema 4D, After Effects, VFX, Animation, Motion Graphics, Nuke)
+        4. IMMERSIVE TECH (VR, AR, XR, SimLab Composer, Metaverse, Game Dev, Unity/Unreal in context of design)
+        5. WEB & CODE (HTML, CSS, JS, Python for creative context, Vibe Coding, Applied CS)
+        6. AI & AUTOMATION (Generative AI for Creatives, n8n, Workflow Automation, AI for Business Strategy)
+        
+        EXPLICITLY UNAUTHORIZED / REJECTED TOPICS:
+        - General Office Software (Microsoft Excel, Word, PowerPoint, Outlook) -> REJECT IMMEDIATELY.
+        - General Business Administration (Accounting, HR, Supply Chain, Traditional Management) -> REJECT.
+        - Non-Tech/Non-Creative Fields (Cooking, Sports, History, Medical, Law, Politics, General Education).
+        - Any topic that does not involve "making", "designing", "coding", or "automating" in a creative context.
+        
+        DECISION LOGIC:
+        - If the topic is "Excel", "Spreadsheets", "Data Entry" -> RETURN REJECTION_MODE.
+        - If the topic is "Sales" without a Branding/Marketing context -> RETURN REJECTION_MODE.
+        - If the topic is loosely related but not in the Authorized Domains -> RETURN REJECTION_MODE.
+        - Only generate if the topic fits the AUTHORIZED DOMAINS above.
 
-        IF THE TOPIC IS IRRELEVANT (e.g., cooking, sports, history, medical, politics, general life advice, or anything not related to Design, Tech, AI, Business Automation, VR, or Media Production):
-        DO NOT GENERATE A SYLLABUS.
-        Instead, return ONLY this specific string format:
-        "REJECTION_MODE: [Insert a short, sarcastic, dry-witted response here. Make fun of the fact that this is a serious design system and not the place for such a request. Be professional but biting.]"
+        IF REJECTED:
+        Return ONLY this specific string format:
+        "REJECTION_MODE: [Insert a short, sarcastic, dry-witted response here. Make fun of the fact that this is a high-end creative design system and not a place for mundane tasks. Be professional but biting. e.g., 'Spreadsheets do not spark joy in this architecture.']"
 
-        IF THE TOPIC IS RELEVANT:
+        IF AUTHORIZED:
         Generate a detailed professional course syllabus using the template below.
         
         Parameters:
@@ -85,7 +103,8 @@ export const AICard: React.FC = () => {
         ${courseContext}
         
         Format requirements:
-        Strictly follow this plain text template structure (do not use markdown bolding like ** or ##):
+        Strictly follow this plain text template structure (do not use markdown bolding like ** or ##). 
+        DO NOT include the Course Ref, Trainer, Level, Duration, or Hours headers. Start directly with COURSE OVERVIEW.
 
         COURSE OVERVIEW:
         [A professional paragraph describing the course, audience, and methodology. Adopt the tone of the existing courses.]
@@ -139,26 +158,70 @@ export const AICard: React.FC = () => {
     }
   };
 
-  const handleCopy = () => {
-    if (!result) return;
+  const generateDocumentContent = () => {
+    const date = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
     
-    let fullText = "";
-    
-    if (isRejected) {
-       fullText = `SYSTEM ALERT: ACCESS DENIED\n---------------------------\n${result}`;
-    } else {
-       fullText = `
-COURSE REF:      ${topic.toUpperCase()}
-TRAINER:         JOE NASR
+    const separator = "________________________________________________________________________________";
+    const subSeparator = "--------------------------------------------------------------------------------";
 
-LEVEL:           ${level.toUpperCase()}
-DURATION:        ${days} Days
-TOTAL HOURS:     ${days * hours} Hours
-------------------------------------------------------------
+    if (isRejected) {
+       return `
+${separator}
+SYSTEM SECURITY ALERT | TRAINING DAYS v3.0
+${separator}
+
+DATE: ${date}
+STATUS: ACCESS DENIED
+
+TOPIC REQUEST: ${topic.toUpperCase()}
 
 ${result}
-      `.trim();
+
+${separator}
+`.trim();
     }
+
+    return `
+${separator}
+TRAINING DAYS | ARCHITECTURE SYSTEM V3
+CORPORATE TRAINING AND KNOWLEDGE DEVELOPMENT
+${separator}
+
+OFFICIAL COURSE SYLLABUS DOCUMENT
+GENERATED VIA CURATED CURRICULUM ENGINE
+
+DATE:            ${date}
+COURSE REF:      ${topic.toUpperCase()}
+INSTRUCTOR:      JOE NASR
+
+ACADEMIC LEVEL:  ${level.toUpperCase()}
+DURATION:        ${days} DAYS
+INTENSITY:       ${hours} HOURS PER DAY
+TOTAL LOAD:      ${days * hours} CONTACT HOURS
+
+${subSeparator}
+
+${result}
+
+${separator}
+INTELLECTUAL PROPERTY NOTICE:
+All materials in this app are the exclusive intellectual property of Joe Nasr. 
+No copying, teaching, distribution, or use in any academic, corporate, 
+governmental, or training environment is permitted without prior approval 
+or written consent from the owner.
+${separator}
+`.trim();
+  };
+
+  const handleCopy = () => {
+    if (!result) return;
+    const fullText = generateDocumentContent();
 
     navigator.clipboard.writeText(fullText).then(() => {
       setCopied(true);
@@ -168,32 +231,132 @@ ${result}
 
   const handleExport = () => {
     if (!result) return;
+
+    // Initialize PDF
+    const doc = new jsPDF();
     
-    let fullText = "";
+    // Settings
+    const marginLeft = 20;
+    const marginTop = 20;
+    const lineHeight = 5;
+    const pageWidth = doc.internal.pageSize.getWidth(); // 210mm for A4
+    const maxLineWidth = pageWidth - (marginLeft * 2);
+    
+    let cursorY = marginTop;
 
+    // --- HEADER ---
+    doc.setFont("courier", "bold");
+    doc.setFontSize(16);
+    doc.text("TRAINING DAYS", marginLeft, cursorY);
+    
+    doc.setFontSize(10);
+    doc.setFont("courier", "normal");
+    doc.text("ARCHITECTURE SYSTEM V3", pageWidth - marginLeft, cursorY, { align: "right" });
+    
+    cursorY += 6;
+    doc.setFontSize(8);
+    doc.text("CORPORATE TRAINING AND KNOWLEDGE DEVELOPMENT", marginLeft, cursorY);
+
+    cursorY += 4;
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, cursorY, pageWidth - marginLeft, cursorY);
+    
     if (isRejected) {
-       fullText = `SYSTEM ALERT: ACCESS DENIED\n---------------------------\n${result}`;
-    } else {
-       fullText = `
-COURSE REF:      ${topic.toUpperCase()}
-TRAINER:         JOE NASR
-
-LEVEL:           ${level.toUpperCase()}
-DURATION:        ${days} Days
-TOTAL HOURS:     ${days * hours} Hours
-------------------------------------------------------------
-
-${result}
-      `.trim();
+        cursorY += 10;
+        doc.setFontSize(14);
+        doc.setFont("courier", "bold");
+        doc.setTextColor(209, 54, 39); // Red
+        doc.text("SYSTEM SECURITY ALERT", pageWidth / 2, cursorY, { align: "center" });
+        
+        cursorY += 10;
+        doc.setFontSize(10);
+        doc.setFont("courier", "normal");
+        doc.setTextColor(0, 0, 0);
+        doc.text(`STATUS: ACCESS DENIED // ${topic.toUpperCase()}`, marginLeft, cursorY);
+        
+        cursorY += 10;
+        doc.setLineWidth(0.2);
+        doc.line(marginLeft, cursorY, pageWidth - marginLeft, cursorY);
+        cursorY += 10;
+        
+        const splitText = doc.splitTextToSize(result, maxLineWidth);
+        doc.text(splitText, marginLeft, cursorY);
+        
+        doc.save('SYSTEM_ALERT.pdf');
+        return;
     }
 
-    const element = document.createElement("a");
-    const file = new Blob([fullText], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = isRejected ? 'SYSTEM_ALERT.txt' : `${topic.replace(/\s+/g, '_').toUpperCase()}_SYLLABUS.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    // --- OFFICIAL SYLLABUS ---
+    cursorY += 10;
+    doc.setFontSize(12);
+    doc.setFont("courier", "bold");
+    doc.text("OFFICIAL COURSE SYLLABUS DOCUMENT", pageWidth / 2, cursorY, { align: "center" });
+    
+    cursorY += 10;
+    
+    // --- METADATA ---
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    doc.setFontSize(10);
+    doc.setFont("courier", "normal");
+    
+    const metadata = [
+      `DATE:       ${date}`,
+      `COURSE REF: ${topic.toUpperCase()}`,
+      `INSTRUCTOR: JOE NASR`,
+      `LEVEL:      ${level.toUpperCase()}`,
+      `DURATION:   ${days} DAYS (${hours} HOURS/DAY)`,
+      `TOTAL LOAD: ${days * hours} CONTACT HOURS`
+    ];
+
+    metadata.forEach(line => {
+      doc.text(line, marginLeft, cursorY);
+      cursorY += 5;
+    });
+
+    cursorY += 5;
+    doc.line(marginLeft, cursorY, pageWidth - marginLeft, cursorY);
+    cursorY += 10;
+
+    // --- CONTENT BODY ---
+    doc.setFontSize(10);
+    const splitText = doc.splitTextToSize(result, maxLineWidth);
+    
+    splitText.forEach((line: string) => {
+      // Check if we need a new page
+      // 280mm is roughly bottom margin for A4 (297mm height)
+      if (cursorY > 270) { 
+        doc.addPage();
+        cursorY = marginTop;
+        // Mini Header on subsequent pages
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(`TRAINING DAYS - ${topic.toUpperCase()}`, marginLeft, cursorY - 10);
+        doc.setTextColor(0);
+        doc.setFontSize(10);
+      }
+      doc.text(line, marginLeft, cursorY);
+      cursorY += lineHeight;
+    });
+
+    // --- FOOTER (LEGAL) ---
+    // Ensure enough space for footer, else add page
+    if (cursorY > 250) {
+       doc.addPage();
+       cursorY = marginTop;
+    }
+    
+    cursorY += 15;
+    doc.setLineWidth(0.2);
+    doc.line(marginLeft, cursorY, pageWidth - marginLeft, cursorY);
+    cursorY += 5;
+    
+    doc.setFontSize(7);
+    doc.setTextColor(100);
+    const legalText = "INTELLECTUAL PROPERTY NOTICE: All materials in this app are the exclusive intellectual property of Joe Nasr. No copying, teaching, distribution, or use in any academic, corporate, governmental, or training environment is permitted without prior approval or written consent from the owner. Unauthorized use may result in legal action and financial penalties determined by the owner.";
+    const splitLegal = doc.splitTextToSize(legalText, maxLineWidth);
+    doc.text(splitLegal, marginLeft, cursorY);
+
+    doc.save(`${topic.replace(/\s+/g, '_').toUpperCase()}_SYLLABUS.pdf`);
   };
 
   return (
@@ -241,7 +404,7 @@ ${result}
                   <button
                     key={l}
                     onClick={() => setLevel(l)}
-                    className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors border-r last:border-r-0 border-gray-300
+                    className={`flex-1 py-3 text-[8px] font-bold uppercase tracking-widest transition-colors border-r last:border-r-0 border-gray-300
                       ${level === l ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-200 hover:text-black'}`}
                   >
                     {l}

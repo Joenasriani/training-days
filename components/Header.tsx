@@ -30,7 +30,7 @@ export const Header: React.FC = () => {
 
   return (
     <header 
-      className="sticky top-0 z-50 bg-[#F5F5F7] border-b border-gray-300 px-8 md:px-16 py-6 flex justify-between items-start transition-shadow duration-100 ease-linear"
+      className="sticky top-0 z-50 bg-[#F5F5F7] border-b border-gray-300 px-8 md:px-16 pt-12 pb-8 flex justify-between items-start transition-shadow duration-100 ease-linear"
       style={{ boxShadow: `0 4px 6px rgba(209, 54, 39, ${shadowOpacity})` }}
     >
       <div className="flex flex-col gap-1">

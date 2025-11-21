@@ -31,7 +31,7 @@ export const COURSES_DATA: Course[] = [
     levels: [
       {
         name: "Beginner",
-        label: "Undergraduate",
+        label: "Introductory",
         syllabus: [
           "Intro to Vibe Coding & Env Setup",
           "Basic Shapes, Colors & Animation",
@@ -53,7 +53,7 @@ export const COURSES_DATA: Course[] = [
     levels: [
       {
         name: "Beginner",
-        label: "Undergraduate",
+        label: "Introductory",
         syllabus: [
           "Introduction to AI Tools for Designers",
           "Prompt Engineering & Visual Composition",
@@ -266,6 +266,28 @@ export const COURSES_DATA: Course[] = [
       }
     ]
   },
+  {
+    id: 22,
+    title: "Blender for\nVideo Editors",
+    code: "VID-150",
+    section: "3D & Motion Graphics",
+    category: "3D Design",
+    icon: <Box className="w-5 h-5" />,
+    description: "Bridging the gap between video editing and 3D. Create 3D titles, transitions, and assets for video workflows.",
+    levels: [
+      {
+        name: "Foundations",
+        label: "Introductory",
+        syllabus: [
+          "Blender Interface for NLE Users",
+          "Basic Modeling & Texturing",
+          "3D Typography & Motion",
+          "Lighting & Camera Animation",
+          "Rendering with Alpha & Compositing"
+        ]
+      }
+    ]
+  },
 
   // --- Business & Automation ---
   {
@@ -279,7 +301,7 @@ export const COURSES_DATA: Course[] = [
     levels: [
       {
         name: "Beginner",
-        label: "Undergraduate",
+        label: "Introductory",
         syllabus: [
           "Introduction to AI in Business",
           "Generating AI Content",
@@ -301,7 +323,7 @@ export const COURSES_DATA: Course[] = [
     levels: [
       {
         name: "Beginner",
-        label: "Undergraduate",
+        label: "Introductory",
         syllabus: [
           "Intro to n8n & Node-Based Workflows",
           "Triggers & Actions Configuration",
@@ -398,6 +420,72 @@ export const COURSES_DATA: Course[] = [
           "Procedural Content Generation",
           "AI Storytelling & Dialogue Systems",
           "Professional Deployment"
+        ]
+      }
+    ]
+  },
+  {
+    id: 23,
+    title: "Unity Game\nDevelopment",
+    code: "GAM-200",
+    section: "Game Development",
+    category: "Game Engine",
+    icon: <Gamepad2 className="w-5 h-5" />,
+    description: "Introduction to real-time interactive development using the Unity Engine and C# scripting.",
+    levels: [
+      {
+        name: "Core Skills",
+        label: "Introductory",
+        syllabus: [
+          "Unity Interface & Hierarchy",
+          "Game Objects, Prefabs & Components",
+          "Introduction to C# Scripting",
+          "Physics, Collisions & Triggers",
+          "UI Systems & Game Logic"
+        ]
+      }
+    ]
+  },
+  {
+    id: 24,
+    title: "The Unreal\nEngine",
+    code: "GAM-300",
+    section: "Game Development",
+    category: "Real-Time 3D",
+    icon: <Cpu className="w-5 h-5" />,
+    description: "Comprehensive mastery of UE5 for games, virtual production, and cinematic visualization.",
+    levels: [
+      {
+        name: "Fundamentals",
+        label: "Introductory",
+        syllabus: [
+          "UE5 Interface & Project Setup",
+          "Level Design & Quixel Assets",
+          "Lighting (Lumen) Basics",
+          "Introduction to Blueprints",
+          "Sequencer for Cinematics"
+        ]
+      },
+      {
+        name: "Advanced",
+        label: "Intermediate",
+        syllabus: [
+          "Advanced Blueprints & Logic",
+          "Material Editor Deep Dive",
+          "Landscape & Foliage Systems",
+          "Nanite Virtualized Geometry",
+          "Character Animation & Rigging"
+        ]
+      },
+      {
+        name: "Professional",
+        label: "Expert",
+        syllabus: [
+          "Virtual Production Workflows",
+          "Niagara Particle Systems",
+          "C++ for Unreal Developers",
+          "Performance Profiling & Optimization",
+          "Packaging & Deployment"
         ]
       }
     ]
@@ -622,6 +710,192 @@ export const COURSES_DATA: Course[] = [
           "Professional Color Grading",
           "Visual Effects (VFX)",
           "Broadcast Delivery Standards"
+        ]
+      }
+    ]
+  },
+  // --- New Intensive Courses ---
+  {
+    id: 17,
+    title: "Integrated Digital\nMedia Production",
+    code: "DMP-200",
+    section: "Video Production",
+    category: "Production",
+    icon: <Film className="w-5 h-5" />,
+    description: "Holistic video production merging editing, cinematic theory, audio engineering, and delivery.",
+    levels: [
+      {
+        name: "Foundations",
+        label: "Introductory",
+        syllabus: [
+          "Introduction to Video Editing Paradigm",
+          "Narrative Structure & Rough Cuts",
+          "Cinematic Lighting Theory",
+          "Product Lighting & Visual Aesthetics",
+          "Advanced Premiere Pro Techniques",
+          "Audio Fundamentals & Dialogue Editing",
+          "Midterm Project: The Mini-Documentary"
+        ]
+      },
+      {
+        name: "Advanced",
+        label: "Intermediate",
+        syllabus: [
+          "Sound Design & Logic Pro X Integration",
+          "Color Correction vs. Color Grading",
+          "Content Marketing Video Strategies",
+          "Technical Standards & Codecs",
+          "Specialized Editing Workflows",
+          "Final Project Workshop",
+          "Final Review & Portfolio Assembly"
+        ]
+      }
+    ]
+  },
+  {
+    id: 18,
+    title: "Advanced Motion\nDesign & VFX",
+    code: "MOT-250",
+    section: "3D & Motion Graphics",
+    category: "VFX",
+    icon: <Video className="w-5 h-5" />,
+    description: "Rigorous curriculum merging 2D animation, 3D modeling (C4D), and VFX compositing (Nuke/AE).",
+    levels: [
+      {
+        name: "Fundamentals",
+        label: "Introductory",
+        syllabus: [
+          "The Art of Motion (2D Principles)",
+          "After Effects Deep Dive",
+          "Introduction to Cinema 4D",
+          "Integration: AE & C4D",
+          "Mograph Techniques",
+          "Visual Effects & Compositing",
+          "Midterm Project: The Broadcast Package"
+        ]
+      },
+      {
+        name: "Simulation",
+        label: "Intermediate",
+        syllabus: [
+          "Advanced Dynamics & Simulation",
+          "High-End Compositing with Nuke",
+          "Concert & Event Graphics",
+          "Virtual Reality (VR) Creation",
+          "Mind-Bending Illusions",
+          "Portfolio & Breakdown Reel",
+          "Final Presentation"
+        ]
+      }
+    ]
+  },
+  {
+    id: 19,
+    title: "Strategic Digital\nMarketing",
+    code: "MKT-300",
+    section: "Business & Automation",
+    category: "Marketing",
+    icon: <Briefcase className="w-5 h-5" />,
+    description: "Intersection of creative branding, data-driven marketing, and sales psychology.",
+    levels: [
+      {
+        name: "Brand Strategy",
+        label: "Introductory",
+        syllabus: [
+          "Branding Foundations",
+          "Personal Branding",
+          "The Marketing Plan",
+          "Creative Thinking in Business",
+          "Content Marketing Strategy",
+          "Visual Communication for Marketers",
+          "Midterm Project: The Brand Bible"
+        ]
+      },
+      {
+        name: "Execution",
+        label: "Intermediate",
+        syllabus: [
+          "Social Media Mastery (Instagram)",
+          "Storytelling for Advertising",
+          "The Psychology of Persuasion",
+          "Field Sales & Negotiation",
+          "Digital Marketing Analytics",
+          "Campaign Case Study",
+          "Final Pitch"
+        ]
+      }
+    ]
+  },
+  {
+    id: 20,
+    title: "Applied\nComputer Science",
+    code: "CS-101",
+    section: "Creative Coding & AI",
+    category: "Dev",
+    icon: <Code className="w-5 h-5" />,
+    description: "Full-stack overview from IT basics and web dev (HTML/JS) to Python and Machine Learning.",
+    levels: [
+      {
+        name: "Frontend",
+        label: "Introductory",
+        syllabus: [
+          "IT Infrastructure",
+          "Structure of the Web (HTML)",
+          "Styling and Aesthetics (CSS)",
+          "Interactivity (JavaScript Basics)",
+          "Advanced JavaScript (DOM)",
+          "Programming Fundamentals",
+          "Midterm Project: The Portfolio Site"
+        ]
+      },
+      {
+        name: "Backend & AI",
+        label: "Intermediate",
+        syllabus: [
+          "Introduction to Python",
+          "Artificial Intelligence Concepts",
+          "Machine Learning Fundamentals",
+          "The Digital Garage (SEO & SEM)",
+          "Emerging Tech & Cloud",
+          "Code Review & Refactoring",
+          "Final Exam"
+        ]
+      }
+    ]
+  },
+  {
+    id: 21,
+    title: "Visual\nCommunication",
+    code: "DESN-180",
+    section: "Visual Design & UX",
+    category: "Graphic Design",
+    icon: <PenTool className="w-5 h-5" />,
+    description: "Focus on static visual media, vector illustration, multi-page layout, and infographic theory.",
+    levels: [
+      {
+        name: "Vector & Illustration",
+        label: "Introductory",
+        syllabus: [
+          "The Vector Environment",
+          "Iconography & Branding Assets",
+          "Typography in Design",
+          "Infographic Theory",
+          "Infographic Execution",
+          "Creative Thinking for Designers",
+          "Midterm Project: Corporate Identity Package"
+        ]
+      },
+      {
+        name: "Publishing",
+        label: "Intermediate",
+        syllabus: [
+          "Introduction to InDesign",
+          "Text Flow & Master Pages",
+          "New Features & Workflows",
+          "Editorial Design",
+          "Print Production",
+          "Portfolio Design",
+          "Final Review"
         ]
       }
     ]

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { AICard } from './components/AICard';
 import { CourseCard } from './components/CourseCard';
@@ -6,6 +6,19 @@ import { COURSES_DATA } from './constants';
 
 export default function App() {
   const [expandedCourseId, setExpandedCourseId] = useState<number | null>(null);
+
+  // Disable right-click context menu
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, []);
 
   const playClickSound = () => {
     try {
@@ -72,7 +85,7 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
               <div className="md:col-span-10">
                 <p className="text-base text-gray-600 leading-relaxed max-w-3xl md:max-w-6xl font-medium border-l-2 border-[#D13627] pl-6">
-                  The complete catalog of course outlines and details is available in the index below. For customized and specialized learning requirements, the <span className="text-black font-bold">AI Card</span> generates tailored syllabi based on all courses and workshops authored by Joe Nasr. This system adapts established learning objectives to specific timeframes and proficiency levels while maintaining full pedagogical rigor and consistency.
+                  This catalog offers a complete set of well-developed syllabi covering media production, digital experience design, interactive content creation, immersive storytelling, and next-generation digital workflows, all authored by Joe Nasr. The <span className="text-black font-bold">AI Card</span> creates customized syllabi that adjust learning objectives to specific timeframes, skill levels, and educational needs, while consistently maintaining strong academic standards, clarity, and instructional coherence.
                 </p>
               </div>
               <div className="md:col-span-2 flex justify-start md:justify-end">
