@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Terminal, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
-import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
 
 export const AICard: React.FC = () => {
@@ -13,6 +12,7 @@ export const AICard: React.FC = () => {
   const [result, setResult] = useState<string | null>(null);
   const [isRejected, setIsRejected] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -229,11 +229,16 @@ ${separator}
     });
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!result) return;
+    setIsExporting(true);
 
-    // Initialize PDF
-    const doc = new jsPDF();
+    try {
+      // Lazy load jsPDF
+      const { jsPDF } = await import("jspdf");
+
+      // Initialize PDF
+      const doc = new jsPDF();
     
     // Settings
     const marginLeft = 20;
@@ -357,6 +362,9 @@ ${separator}
     doc.text(splitLegal, marginLeft, cursorY);
 
     doc.save(`${topic.replace(/\s+/g, '_').toUpperCase()}_SYLLABUS.pdf`);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -556,9 +564,13 @@ ${separator}
                     </button>
                     <button 
                       onClick={handleExport}
-                      className={`text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] ${isRejected ? 'border-[#D13627] text-[#D13627] hover:bg-[#D13627]' : 'border-black text-black hover:bg-black'}`}
+                      disabled={isExporting}
+                      className={`text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px]
+                        ${isRejected ? 'border-[#D13627] text-[#D13627] hover:bg-[#D13627]' : 'border-black text-black hover:bg-black'}
+                        ${isExporting ? 'opacity-50 cursor-wait' : ''}
+                      `}
                     >
-                      EXPORT
+                      {isExporting ? "EXPORTING..." : "EXPORT"}
                     </button>
                 </div>
               </div>
