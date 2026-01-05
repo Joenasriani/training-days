@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Terminal, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
-import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
 
 export const AICard: React.FC = () => {
@@ -229,10 +228,11 @@ ${separator}
     });
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!result) return;
 
     // Initialize PDF
+    const { jsPDF } = await import("jspdf");
     const doc = new jsPDF();
     
     // Settings
