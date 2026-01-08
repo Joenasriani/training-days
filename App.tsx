@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { AICard } from './components/AICard';
 import { CourseCard } from './components/CourseCard';
@@ -20,7 +20,7 @@ export default function App() {
     };
   }, []);
 
-  const playClickSound = () => {
+  const playClickSound = useCallback(() => {
     try {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContext) return;
@@ -46,12 +46,11 @@ export default function App() {
     } catch (error) {
       // Ignore audio errors
     }
-  };
+  }, []);
 
-  const toggleCourse = (id: number) => {
-    const isOpening = expandedCourseId !== id;
-
-    if (isOpening) {
+  // Handle side effects when expandedCourseId changes
+  useEffect(() => {
+    if (expandedCourseId !== null) {
       playClickSound();
 
       // Only trigger vibration on mobile devices
@@ -60,9 +59,11 @@ export default function App() {
         navigator.vibrate(15); // Short haptic pulse
       }
     }
-    
-    setExpandedCourseId(expandedCourseId === id ? null : id);
-  };
+  }, [expandedCourseId, playClickSound]);
+
+  const toggleCourse = useCallback((id: number) => {
+    setExpandedCourseId(prev => prev === id ? null : id);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] text-black font-sans relative">
@@ -120,7 +121,7 @@ export default function App() {
                   key={course.id} 
                   course={course} 
                   isExpanded={expandedCourseId === course.id}
-                  onToggle={() => toggleCourse(course.id)}
+                  onToggle={toggleCourse}
                   sectionHeader={course.section}
                 />
               );
