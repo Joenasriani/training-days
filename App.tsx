@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Header } from './components/Header';
 import { AICard } from './components/AICard';
 import { CourseCard } from './components/CourseCard';
@@ -6,6 +6,8 @@ import { COURSES_DATA } from './constants';
 
 export default function App() {
   const [expandedCourseId, setExpandedCourseId] = useState<number | null>(null);
+  const expandedCourseIdRef = useRef<number | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
   // Disable right-click context menu
   useEffect(() => {
@@ -20,12 +22,25 @@ export default function App() {
     };
   }, []);
 
-  const playClickSound = () => {
-    try {
+  const getAudioContext = useCallback(() => {
+    if (!audioCtxRef.current) {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContext) return;
+      if (AudioContext) {
+        audioCtxRef.current = new AudioContext();
+      }
+    }
+    return audioCtxRef.current;
+  }, []);
+
+  const playClickSound = useCallback(() => {
+    try {
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
       
-      const audioCtx = new AudioContext();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
 
@@ -46,10 +61,11 @@ export default function App() {
     } catch (error) {
       // Ignore audio errors
     }
-  };
+  }, [getAudioContext]);
 
-  const toggleCourse = (id: number) => {
-    const isOpening = expandedCourseId !== id;
+  const toggleCourse = useCallback((id: number) => {
+    // Check if we are opening a new card
+    const isOpening = expandedCourseIdRef.current !== id;
 
     if (isOpening) {
       playClickSound();
@@ -61,8 +77,11 @@ export default function App() {
       }
     }
     
-    setExpandedCourseId(expandedCourseId === id ? null : id);
-  };
+    // Toggle logic: if clicking the same ID, close it (null). Else, open it.
+    const newId = expandedCourseIdRef.current === id ? null : id;
+    expandedCourseIdRef.current = newId;
+    setExpandedCourseId(newId);
+  }, [playClickSound]);
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] text-black font-sans relative">
@@ -120,7 +139,7 @@ export default function App() {
                   key={course.id} 
                   course={course} 
                   isExpanded={expandedCourseId === course.id}
-                  onToggle={() => toggleCourse(course.id)}
+                  onToggle={toggleCourse}
                   sectionHeader={course.section}
                 />
               );
