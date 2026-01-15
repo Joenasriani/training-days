@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Header } from './components/Header';
 import { AICard } from './components/AICard';
 import { CourseCard } from './components/CourseCard';
@@ -6,6 +6,12 @@ import { COURSES_DATA } from './constants';
 
 export default function App() {
   const [expandedCourseId, setExpandedCourseId] = useState<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const expandedCourseIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    expandedCourseIdRef.current = expandedCourseId;
+  }, [expandedCourseId]);
 
   // Disable right-click context menu
   useEffect(() => {
@@ -20,12 +26,22 @@ export default function App() {
     };
   }, []);
 
-  const playClickSound = () => {
+  const playClickSound = useCallback(() => {
     try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContext) return;
+      const AudioContextCtor = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextCtor) return;
+
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContextCtor();
+      }
+
+      const audioCtx = audioContextRef.current;
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
       
-      const audioCtx = new AudioContext();
+      if (!audioCtx) return;
+
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
 
@@ -46,10 +62,10 @@ export default function App() {
     } catch (error) {
       // Ignore audio errors
     }
-  };
+  }, []);
 
-  const toggleCourse = (id: number) => {
-    const isOpening = expandedCourseId !== id;
+  const toggleCourse = useCallback((id: number) => {
+    const isOpening = expandedCourseIdRef.current !== id;
 
     if (isOpening) {
       playClickSound();
@@ -61,8 +77,8 @@ export default function App() {
       }
     }
     
-    setExpandedCourseId(expandedCourseId === id ? null : id);
-  };
+    setExpandedCourseId(prev => prev === id ? null : id);
+  }, [playClickSound]);
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] text-black font-sans relative">
@@ -120,7 +136,7 @@ export default function App() {
                   key={course.id} 
                   course={course} 
                   isExpanded={expandedCourseId === course.id}
-                  onToggle={() => toggleCourse(course.id)}
+                  onToggle={toggleCourse}
                   sectionHeader={course.section}
                 />
               );
