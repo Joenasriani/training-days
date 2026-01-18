@@ -5,11 +5,11 @@ import { Course } from '../types';
 interface CourseCardProps {
   course: Course;
   isExpanded: boolean;
-  onToggle: () => void;
+  onToggle: (id: number) => void;
   sectionHeader?: string;
 }
 
-export const CourseCard: React.FC<CourseCardProps> = ({ course, isExpanded, onToggle, sectionHeader }) => {
+export const CourseCard: React.FC<CourseCardProps> = React.memo(({ course, isExpanded, onToggle, sectionHeader }) => {
   const [activeLevel, setActiveLevel] = useState<string | null>(null);
 
   const handleLevelClick = (e: React.MouseEvent, levelName: string) => {
@@ -19,7 +19,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isExpanded, onTo
 
   return (
     <div 
-      onClick={onToggle}
+      onClick={() => onToggle(course.id)}
       className={`
         relative overflow-hidden border transition-all duration-500 ease-in-out cursor-pointer
         ${isExpanded 
@@ -115,4 +115,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isExpanded, onTo
       </div>
     </div>
   );
-};
+});
+
+CourseCard.displayName = 'CourseCard';
