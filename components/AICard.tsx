@@ -1,7 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { Terminal, Sparkles } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
-import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
 
 export const AICard: React.FC = () => {
@@ -52,6 +50,7 @@ export const AICard: React.FC = () => {
     setIsRejected(false);
 
     try {
+      const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       // Prepare context from existing courses to ground the AI in the specific style
@@ -229,8 +228,10 @@ ${separator}
     });
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!result) return;
+
+    const { jsPDF } = await import("jspdf");
 
     // Initialize PDF
     const doc = new jsPDF();
