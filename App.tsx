@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Header } from './components/Header';
 import { AICard } from './components/AICard';
 import { CourseCard } from './components/CourseCard';
 import { COURSES_DATA } from './constants';
+import { audioController } from './audioController';
 
 export default function App() {
   const [expandedCourseId, setExpandedCourseId] = useState<number | null>(null);
+
+  // Ref to track state for stable callback
+  const expandedCourseIdRef = useRef<number | null>(null);
 
   // Disable right-click context menu
   useEffect(() => {
@@ -20,39 +24,17 @@ export default function App() {
     };
   }, []);
 
-  const playClickSound = () => {
-    try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContext) return;
-      
-      const audioCtx = new AudioContext();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
+  // Sync ref
+  useEffect(() => {
+    expandedCourseIdRef.current = expandedCourseId;
+  }, [expandedCourseId]);
 
-      // Regular Mouse Click: Short, high-frequency sine burst without pitch drop
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(700, audioCtx.currentTime);
-      
-      // Envelope: Instant attack, extremely fast decay
-      // Reduced volume by 50% (0.025 -> 0.0125)
-      gainNode.gain.setValueAtTime(0.0125, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.01);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + 0.01);
-    } catch (error) {
-      // Ignore audio errors
-    }
-  };
-
-  const toggleCourse = (id: number) => {
-    const isOpening = expandedCourseId !== id;
+  const toggleCourse = useCallback((id: number) => {
+    const currentId = expandedCourseIdRef.current;
+    const isOpening = currentId !== id;
 
     if (isOpening) {
-      playClickSound();
+      audioController.playTone(700);
 
       // Only trigger vibration on mobile devices
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -61,8 +43,8 @@ export default function App() {
       }
     }
     
-    setExpandedCourseId(expandedCourseId === id ? null : id);
-  };
+    setExpandedCourseId(prev => prev === id ? null : id);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] text-black font-sans relative">
@@ -120,7 +102,7 @@ export default function App() {
                   key={course.id} 
                   course={course} 
                   isExpanded={expandedCourseId === course.id}
-                  onToggle={() => toggleCourse(course.id)}
+                  onToggle={toggleCourse}
                   sectionHeader={course.section}
                 />
               );
