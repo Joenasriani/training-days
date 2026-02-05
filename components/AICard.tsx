@@ -3,6 +3,7 @@ import { Terminal, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
+import { AudioController } from '../audioController';
 
 export const AICard: React.FC = () => {
   const [topic, setTopic] = useState("");
@@ -15,35 +16,6 @@ export const AICard: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const resultRef = useRef<HTMLDivElement>(null);
-
-  const playInputClick = (freqMultiplier: number = 1) => {
-    try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContext) return;
-      
-      const audioCtx = new AudioContext();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      // Regular Mouse Click: Short, high-frequency sine burst without pitch drop
-      oscillator.type = 'sine';
-      // Base frequency is 700Hz, multiplied by modifier (e.g. 0.7 for 30% lower)
-      oscillator.frequency.setValueAtTime(700 * freqMultiplier, audioCtx.currentTime);
-      
-      // Envelope: Instant attack, extremely fast decay
-      // Reduced volume by 50% (0.025 -> 0.0125)
-      gainNode.gain.setValueAtTime(0.0125, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.01);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + 0.01);
-    } catch (error) {
-      // Ignore audio errors
-    }
-  };
 
   const handleGenerate = async () => {
     if (!topic) return;
@@ -421,12 +393,12 @@ ${separator}
                 </label>
                 <div className="flex items-center border border-gray-300 bg-[#F5F5F7]">
                   <button 
-                    onClick={() => { playInputClick(0.7); setDays(Math.max(1, days - 1)); }} 
+                    onClick={() => { AudioController.getInstance().playClick(0.7); setDays(Math.max(1, days - 1)); }}
                     className="px-4 py-3 text-black hover:bg-gray-200 font-bold border-r border-gray-300"
                   >-</button>
                   <div className="flex-1 text-center text-xs font-bold text-black">{days}</div>
                   <button 
-                    onClick={() => { playInputClick(1); setDays(Math.min(30, days + 1)); }} 
+                    onClick={() => { AudioController.getInstance().playClick(1); setDays(Math.min(30, days + 1)); }}
                     className="px-4 py-3 text-black hover:bg-gray-200 font-bold border-l border-gray-300"
                   >+</button>
                 </div>
@@ -438,12 +410,12 @@ ${separator}
                 </label>
                 <div className="flex items-center border border-gray-300 bg-[#F5F5F7]">
                   <button 
-                    onClick={() => { playInputClick(0.7); setHours(Math.max(1, hours - 1)); }} 
+                    onClick={() => { AudioController.getInstance().playClick(0.7); setHours(Math.max(1, hours - 1)); }}
                     className="px-4 py-3 text-black hover:bg-gray-200 font-bold border-r border-gray-300"
                   >-</button>
                   <div className="flex-1 text-center text-xs font-bold text-black">{hours}</div>
                   <button 
-                    onClick={() => { playInputClick(1); setHours(Math.min(5, hours + 1)); }} 
+                    onClick={() => { AudioController.getInstance().playClick(1); setHours(Math.min(5, hours + 1)); }}
                     className="px-4 py-3 text-black hover:bg-gray-200 font-bold border-l border-gray-300"
                   >+</button>
                 </div>
