@@ -1,0 +1,3 @@
+## 2024-05-23 - Singleton AudioContext
+**Learning:** Recreating `AudioContext` on every user interaction is a performance anti-pattern. Browsers limit the number of active contexts (often ~6), which can cause audio to fail silently or throw warnings.
+**Action:** Always use a Singleton pattern for `AudioContext`. Initialize it lazily on the first user interaction if possible, or keep a single instance globally. Resume the context if it's suspended.
