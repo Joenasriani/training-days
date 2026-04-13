@@ -10,6 +10,8 @@ export const AICard: React.FC = () => {
   const [hours, setHours] = useState(2);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const resultRef = useRef<HTMLDivElement>(null);
@@ -47,6 +49,8 @@ export const AICard: React.FC = () => {
     if (!topic) return;
     setIsGenerating(true);
     setResult(null);
+    setErrorCode(null);
+    setErrorMessage(null);
 
     try {
       // Prepare context from existing courses for semantic matching and style reference
@@ -127,8 +131,11 @@ export const AICard: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        const msg = data?.error ?? "Generation failed";
-        throw new Error(msg);
+        const code: string = data?.code ?? "UNKNOWN";
+        const msg: string = data?.error ?? "Generation failed";
+        const err = new Error(msg);
+        (err as any).code = code;
+        throw err;
       }
 
       const text: string = data.text ?? "";
@@ -137,7 +144,10 @@ export const AICard: React.FC = () => {
 
     } catch (error) {
       console.error("Generation failed", error);
-      setResult(`ERROR: UNABLE TO GENERATE CONTENT.\n\nPlease check your API connection or try again.\n\nDetails: ${(error as Error).message}`);
+      const code = error instanceof Error && "code" in error ? String((error as Error & { code: string }).code) : "UNKNOWN";
+      const msg = error instanceof Error ? error.message : "An unexpected error occurred.";
+      setErrorCode(code);
+      setErrorMessage(msg);
     } finally {
       setIsGenerating(false);
     }
@@ -425,7 +435,7 @@ ${separator}
                       }} 
                  />
 
-                {!result && !isGenerating && (
+                {!result && !errorCode && !isGenerating && (
                   <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-4 relative z-10">
                     <div className="w-12 h-12 border-2 border-gray-200 flex items-center justify-center">
                       <Sparkles size={20} />
@@ -441,6 +451,38 @@ ${separator}
                      <div className="h-32 bg-gray-100 w-full border border-gray-100"></div>
                      <div className="h-3 bg-gray-200 w-5/6"></div>
                    </div>
+                )}
+
+                {errorCode && !isGenerating && (
+                  <div className="relative z-10 font-mono text-xs">
+                    <div className="border border-gray-300 p-6">
+                      {errorCode === "MISSING_API_KEY" ? (
+                        <>
+                          <p className="text-[#D13627] font-bold uppercase tracking-widest mb-3">Server Not Configured</p>
+                          <p className="text-black mb-2">The <span className="font-bold">TRAININGDAYS_API</span> environment variable is not set on the server.</p>
+                          <p className="text-gray-500">Set it in your Vercel project settings (Settings → Environment Variables) or in <span className="font-bold">.env.local</span> for local development, then redeploy.</p>
+                        </>
+                      ) : errorCode === "AUTH_FAILED" ? (
+                        <>
+                          <p className="text-[#D13627] font-bold uppercase tracking-widest mb-3">OpenRouter Authentication Failed</p>
+                          <p className="text-black mb-2">The API key was rejected by OpenRouter (401/403).</p>
+                          <p className="text-gray-500">Verify that <span className="font-bold">TRAININGDAYS_API</span> is set to a valid OpenRouter key with access to the <span className="font-bold">openrouter/auto</span> model, then redeploy.</p>
+                        </>
+                      ) : errorCode === "NETWORK_ERROR" ? (
+                        <>
+                          <p className="text-[#D13627] font-bold uppercase tracking-widest mb-3">Network Error</p>
+                          <p className="text-black mb-2">Could not reach OpenRouter. Please check your connection and try again.</p>
+                          {errorMessage && <p className="text-gray-500 mt-1">Details: {errorMessage}</p>}
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-[#D13627] font-bold uppercase tracking-widest mb-3">Generation Failed</p>
+                          <p className="text-black mb-2">An error occurred while generating the syllabus.</p>
+                          {errorMessage && <p className="text-gray-500 mt-1">Details: {errorMessage}</p>}
+                        </>
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 {result && !isGenerating && (
