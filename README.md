@@ -4,7 +4,7 @@
 
 # Training Days
 
-A course catalog and AI-powered syllabus generator for creative technology, design, and media production workshops managed by Joe Nasr.
+A course catalog and AI-powered syllabus generator for creative technology, design, and media production workshops managed by Apex Innovate.
 
 The **AI Card** feature generates detailed course syllabi using [OpenRouter](https://openrouter.ai/) with automatic model routing (`openrouter/auto`). The API key is kept server-side and never exposed to the browser.
 

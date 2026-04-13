@@ -44,7 +44,7 @@ export const generateSyllabus = (topic: string, level: string, days: number, hou
   
   return `
 COURSE REF:      ${topic.toUpperCase()}
-TRAINER:         JOE NASR
+TRAINER:         APEX INNOVATE
 
 -
 

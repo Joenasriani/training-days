@@ -58,7 +58,7 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
               <div className="md:col-span-10">
                 <p className="text-base text-gray-600 leading-relaxed max-w-3xl md:max-w-6xl font-medium border-l-2 border-[#D13627] pl-6">
-                  This catalog offers a complete set of well-developed syllabi covering media production, digital experience design, interactive content creation, immersive storytelling, and next-generation digital workflows, all authored by Joe Nasr. The <span className="text-black font-bold">AI Card</span> creates customized syllabi that adjust learning objectives to specific timeframes, skill levels, and educational needs, while consistently maintaining strong academic standards, clarity, and instructional coherence.
+                  This catalog offers a complete set of well-developed syllabi covering media production, digital experience design, interactive content creation, immersive storytelling, and next-generation digital workflows, all authored by Apex Innovate. The <span className="text-black font-bold">AI Card</span> creates customized syllabi that adjust learning objectives to specific timeframes, skill levels, and educational needs, while consistently maintaining strong academic standards, clarity, and instructional coherence.
                 </p>
               </div>
               <div className="md:col-span-2 flex justify-start md:justify-end">
@@ -114,7 +114,7 @@ export default function App() {
 
             {/* Center: Legal Text */}
             <p className="text-[8px] text-gray-400 text-center w-full md:w-1/2 px-4 order-first md:order-none mb-4 md:mb-0">
-              All materials in this app are the exclusive intellectual property of Joe Nasr. No copying, teaching, distribution, or use in any academic, corporate, governmental, or training environment is permitted without prior approval or written consent from the owner. Unauthorized use may result in legal action and financial penalties determined by the owner.
+              All materials in this app are the exclusive intellectual property of Apex Innovate. No copying, teaching, distribution, or use in any academic, corporate, governmental, or training environment is permitted without prior approval or written consent from the owner. Unauthorized use may result in legal action and financial penalties determined by the owner.
             </p>
 
             {/* Right: Status */}
