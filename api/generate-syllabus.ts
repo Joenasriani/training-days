@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         messages: [
           {
             role: "system",
-            content: "You are the Training Days Curated Curriculum Engine, managed by Joe Nasr.",
+            content: "You are the Training Days Curated Curriculum Engine, managed by Apex Innovate.",
           },
           {
             role: "user",

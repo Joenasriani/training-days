@@ -59,7 +59,7 @@ export const AICard: React.FC = () => {
       ).join('\n---\n');
 
       const prompt = `
-        You are the "Training Days" Curated Curriculum Engine, managed by Joe Nasr.
+        You are the "Training Days" Curated Curriculum Engine, managed by Apex Innovate.
 
         The user has requested a syllabus for: "${topic}".
 
@@ -176,7 +176,7 @@ GENERATED VIA CURATED CURRICULUM ENGINE
 
 DATE:            ${date}
 COURSE REF:      ${topic.toUpperCase()}
-INSTRUCTOR:      JOE NASR
+INSTRUCTOR:      APEX INNOVATE
 
 ACADEMIC LEVEL:  ${level.toUpperCase()}
 DURATION:        ${days} DAYS
@@ -189,7 +189,7 @@ ${result}
 
 ${separator}
 INTELLECTUAL PROPERTY NOTICE:
-All materials in this app are the exclusive intellectual property of Joe Nasr. 
+All materials in this app are the exclusive intellectual property of Apex Innovate. 
 No copying, teaching, distribution, or use in any academic, corporate, 
 governmental, or training environment is permitted without prior approval 
 or written consent from the owner.
@@ -255,7 +255,7 @@ ${separator}
     const metadata = [
       `DATE:       ${date}`,
       `COURSE REF: ${topic.toUpperCase()}`,
-      `INSTRUCTOR: JOE NASR`,
+      `INSTRUCTOR: APEX INNOVATE`,
       `LEVEL:      ${level.toUpperCase()}`,
       `DURATION:   ${days} DAYS (${hours} HOURS/DAY)`,
       `TOTAL LOAD: ${days * hours} CONTACT HOURS`
@@ -305,7 +305,7 @@ ${separator}
     
     doc.setFontSize(7);
     doc.setTextColor(100);
-    const legalText = "INTELLECTUAL PROPERTY NOTICE: All materials in this app are the exclusive intellectual property of Joe Nasr. No copying, teaching, distribution, or use in any academic, corporate, governmental, or training environment is permitted without prior approval or written consent from the owner. Unauthorized use may result in legal action and financial penalties determined by the owner.";
+    const legalText = "INTELLECTUAL PROPERTY NOTICE: All materials in this app are the exclusive intellectual property of Apex Innovate. No copying, teaching, distribution, or use in any academic, corporate, governmental, or training environment is permitted without prior approval or written consent from the owner. Unauthorized use may result in legal action and financial penalties determined by the owner.";
     const splitLegal = doc.splitTextToSize(legalText, maxLineWidth);
     doc.text(splitLegal, marginLeft, cursorY);
 
@@ -497,7 +497,7 @@ ${separator}
                               </div>
                               <div className="flex">
                                  <span className="w-[12ch] text-gray-500">TRAINER:</span>
-                                 <span>JOE NASR</span>
+                                 <span>APEX INNOVATE</span>
                               </div>
                            </div>
                            <div className="flex flex-col gap-1">
