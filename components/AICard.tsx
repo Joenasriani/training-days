@@ -10,7 +10,6 @@ export const AICard: React.FC = () => {
   const [hours, setHours] = useState(2);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [isRejected, setIsRejected] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const resultRef = useRef<HTMLDivElement>(null);
@@ -48,63 +47,50 @@ export const AICard: React.FC = () => {
     if (!topic) return;
     setIsGenerating(true);
     setResult(null);
-    setIsRejected(false);
 
     try {
-      // Prepare context from existing courses to ground the AI in the specific style
+      // Prepare context from existing courses for semantic matching and style reference
       const courseContext = COURSES_DATA.map(c => 
         `Course: ${c.title.replace('\n', ' ')} (${c.category})\nDescription: ${c.description}\nLevels: ${c.levels.map(l => l.name).join(', ')}`
       ).join('\n---\n');
 
       const prompt = `
         You are the "Training Days" Curated Curriculum Engine, managed by Joe Nasr.
-        
-        CRITICAL INSTRUCTION: STRICT TOPIC VALIDATION.
+
         The user has requested a syllabus for: "${topic}".
-        
-        You must verify if this topic belongs to the SPECIFIC curriculum catalog of Joe Nasr, which focuses EXCLUSIVELY on Creative Technology, Design, and Media Production.
-        
-        AUTHORIZED DOMAINS (STRICTLY LIMITED TO):
-        1. MEDIA PRODUCTION (Video Editing, Filmmaking, DaVinci Resolve, Premiere Pro, Integrated Digital Media)
-        2. DESIGN & GRAPHICS (Adobe Photoshop, Illustrator, InDesign, Visual Communication, Branding, UI/UX, Figma)
-        3. 3D & MOTION (Cinema 4D, After Effects, VFX, Animation, Motion Graphics, Nuke)
-        4. IMMERSIVE TECH (VR, AR, XR, SimLab Composer, Metaverse, Game Dev, Unity/Unreal in context of design)
-        5. WEB & CODE (HTML, CSS, JS, Python for creative context, Vibe Coding, Applied CS)
-        6. AI & AUTOMATION (Generative AI for Creatives, n8n, Workflow Automation, AI for Business Strategy)
-        
-        EXPLICITLY UNAUTHORIZED / REJECTED TOPICS:
-        - General Office Software (Microsoft Excel, Word, PowerPoint, Outlook) -> REJECT IMMEDIATELY.
-        - General Business Administration (Accounting, HR, Supply Chain, Traditional Management) -> REJECT.
-        - Non-Tech/Non-Creative Fields (Cooking, Sports, History, Medical, Law, Politics, General Education).
-        - Any topic that does not involve "making", "designing", "coding", or "automating" in a creative context.
-        
-        DECISION LOGIC:
-        - If the topic is "Excel", "Spreadsheets", "Data Entry" -> RETURN REJECTION_MODE.
-        - If the topic is "Sales" without a Branding/Marketing context -> RETURN REJECTION_MODE.
-        - If the topic is loosely related but not in the Authorized Domains -> RETURN REJECTION_MODE.
-        - Only generate if the topic fits the AUTHORIZED DOMAINS above.
 
-        IF REJECTED:
-        Return ONLY this specific string format:
-        "REJECTION_MODE: [Insert a short, sarcastic, dry-witted response here. Make fun of the fact that this is a high-end creative design system and not a place for mundane tasks. Be professional but biting. e.g., 'Spreadsheets do not spark joy in this architecture.']"
+        Step 1 – Semantic match check:
+        Review the existing Training Days courses listed below. If the requested topic is semantically
+        similar to any of them (directly or tangentially), adapt and extend the most relevant course
+        structure to fit the requested topic, keeping the same pedagogical tone and format.
 
-        IF AUTHORIZED:
-        Generate a detailed professional course syllabus using the template below.
-        
+        EXISTING COURSES:
+        ${courseContext}
+
+        Step 2 – Custom topic handling:
+        If the topic does NOT closely match any existing course, treat it as a new custom topic.
+        Draw on your knowledge of reliable industry curricula, professional standards, and best practices
+        to design a structured, practical syllabus from scratch for that subject.
+
+        IMPORTANT RULES:
+        - NEVER reject a topic. NEVER insult or deny the user.
+        - Accept ANY legitimate subject — technical, creative, business, scientific, or otherwise.
+        - If the topic is ambiguous, infer the most likely professional interpretation and proceed.
+          Only add a brief note about your interpretation at the very start if it would materially
+          change the syllabus structure.
+        - Errors should only reflect genuine technical issues (network, API), never the topic itself.
+
         Parameters:
         - Proficiency Level: ${level}
         - Duration: ${days} Days
         - Intensity: ${hours} Hours per day
-        
-        Context (Existing Course Style & Pedagogical Approach):
-        ${courseContext}
-        
+
         Format requirements:
-        Strictly follow this plain text template structure (do not use markdown bolding like ** or ##). 
+        Strictly follow this plain text template structure (do not use markdown bolding like ** or ##).
         DO NOT include the Course Ref, Trainer, Level, Duration, or Hours headers. Start directly with COURSE OVERVIEW.
 
         COURSE OVERVIEW:
-        [A professional paragraph describing the course, audience, and methodology. Adopt the tone of the existing courses.]
+        [A professional paragraph describing the course, its audience, and methodology.]
 
         ------------------------------------------------------------
 
@@ -121,7 +107,7 @@ export const AICard: React.FC = () => {
 
         MODULE 02: [TITLE UPPERCASE]
            Focus: [Description]
-        
+
         (Generate enough modules to cover the duration. Roughly 1 module per half-day or day depending on intensity.)
 
         ------------------------------------------------------------
@@ -147,13 +133,7 @@ export const AICard: React.FC = () => {
 
       const text: string = data.text ?? "";
 
-      if (text.startsWith("REJECTION_MODE:")) {
-        setIsRejected(true);
-        setResult(text.replace("REJECTION_MODE:", "").trim());
-      } else {
-        setIsRejected(false);
-        setResult(text);
-      }
+      setResult(text);
 
     } catch (error) {
       console.error("Generation failed", error);
@@ -174,23 +154,6 @@ export const AICard: React.FC = () => {
     
     const separator = "________________________________________________________________________________";
     const subSeparator = "--------------------------------------------------------------------------------";
-
-    if (isRejected) {
-       return `
-${separator}
-SYSTEM SECURITY ALERT | TRAINING DAYS v3.0
-${separator}
-
-DATE: ${date}
-STATUS: ACCESS DENIED
-
-TOPIC REQUEST: ${topic.toUpperCase()}
-
-${result}
-
-${separator}
-`.trim();
-    }
 
     return `
 ${separator}
@@ -266,31 +229,6 @@ ${separator}
     doc.setLineWidth(0.5);
     doc.line(marginLeft, cursorY, pageWidth - marginLeft, cursorY);
     
-    if (isRejected) {
-        cursorY += 10;
-        doc.setFontSize(14);
-        doc.setFont("courier", "bold");
-        doc.setTextColor(209, 54, 39); // Red
-        doc.text("SYSTEM SECURITY ALERT", pageWidth / 2, cursorY, { align: "center" });
-        
-        cursorY += 10;
-        doc.setFontSize(10);
-        doc.setFont("courier", "normal");
-        doc.setTextColor(0, 0, 0);
-        doc.text(`STATUS: ACCESS DENIED // ${topic.toUpperCase()}`, marginLeft, cursorY);
-        
-        cursorY += 10;
-        doc.setLineWidth(0.2);
-        doc.line(marginLeft, cursorY, pageWidth - marginLeft, cursorY);
-        cursorY += 10;
-        
-        const splitText = doc.splitTextToSize(result, maxLineWidth);
-        doc.text(splitText, marginLeft, cursorY);
-        
-        doc.save('SYSTEM_ALERT.pdf');
-        return;
-    }
-
     // --- OFFICIAL SYLLABUS ---
     cursorY += 10;
     doc.setFontSize(12);
@@ -471,9 +409,9 @@ ${separator}
             <div className="border border-gray-300 bg-white h-full flex flex-col min-h-[250px] lg:min-h-[400px]">
               <div className="px-4 py-2 border-b border-gray-300 flex justify-between items-center bg-[#F5F5F7]">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${result ? (isRejected ? 'bg-[#D13627]' : 'bg-green-500') : 'bg-gray-300'}`} />
-                  <span className={`text-[10px] font-mono font-bold uppercase ${isRejected ? 'text-[#D13627]' : 'text-gray-500'}`}>
-                     {isRejected ? 'SECURITY_PROTOCOL_ENGAGED' : 'Output_Stream_01'}
+                  <div className={`w-2 h-2 rounded-full ${result ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <span className="text-[10px] font-mono font-bold uppercase text-gray-500">
+                     Output_Stream_01
                   </span>
                 </div>
               </div>
@@ -508,44 +446,37 @@ ${separator}
                 {result && !isGenerating && (
                   <div className="relative z-10">
                      {/* Header constructed in React for layout control */}
-                     {!isRejected ? (
-                        <div className="font-mono text-xs text-black mb-6">
-                           <div className="flex justify-between items-start">
-                              <div className="flex flex-col gap-1">
-                                 <div className="flex">
-                                    <span className="w-[12ch] text-gray-500">COURSE REF:</span>
-                                    <span className="uppercase">{topic}</span>
-                                 </div>
-                                 <div className="flex">
-                                    <span className="w-[12ch] text-gray-500">TRAINER:</span>
-                                    <span>JOE NASR</span>
-                                 </div>
+                     <div className="font-mono text-xs text-black mb-6">
+                        <div className="flex justify-between items-start">
+                           <div className="flex flex-col gap-1">
+                              <div className="flex">
+                                 <span className="w-[12ch] text-gray-500">COURSE REF:</span>
+                                 <span className="uppercase">{topic}</span>
                               </div>
-                              <div className="flex flex-col gap-1">
-                                 <div className="flex">
-                                    <span className="w-[14ch] text-gray-500">LEVEL:</span>
-                                    <span className="uppercase">{level}</span>
-                                 </div>
-                                  <div className="flex">
-                                    <span className="w-[14ch] text-gray-500">DURATION:</span>
-                                    <span>{days} Days</span>
-                                 </div>
-                                  <div className="flex">
-                                    <span className="w-[14ch] text-gray-500">TOTAL HOURS:</span>
-                                    <span>{days * hours} Hours</span>
-                                 </div>
+                              <div className="flex">
+                                 <span className="w-[12ch] text-gray-500">TRAINER:</span>
+                                 <span>JOE NASR</span>
                               </div>
                            </div>
-                           <div className="my-6 border-b border-dashed border-black/20 w-full"></div>
+                           <div className="flex flex-col gap-1">
+                              <div className="flex">
+                                 <span className="w-[14ch] text-gray-500">LEVEL:</span>
+                                 <span className="uppercase">{level}</span>
+                              </div>
+                               <div className="flex">
+                                 <span className="w-[14ch] text-gray-500">DURATION:</span>
+                                 <span>{days} Days</span>
+                              </div>
+                               <div className="flex">
+                                 <span className="w-[14ch] text-gray-500">TOTAL HOURS:</span>
+                                 <span>{days * hours} Hours</span>
+                              </div>
+                           </div>
                         </div>
-                     ) : (
-                        <div className="font-mono text-xs text-[#D13627] mb-6 font-bold">
-                           ACCESS DENIED // IRRELEVANT TOPIC DETECTED
-                           <div className="my-6 border-b border-dashed border-[#D13627]/50 w-full"></div>
-                        </div>
-                     )}
+                        <div className="my-6 border-b border-dashed border-black/20 w-full"></div>
+                     </div>
 
-                     <pre className={`font-mono text-xs whitespace-pre-wrap leading-[24px] ${isRejected ? 'text-[#D13627]' : 'text-black'}`}>
+                     <pre className="font-mono text-xs whitespace-pre-wrap leading-[24px] text-black">
                         {result}
                      </pre>
                   </div>
@@ -555,13 +486,13 @@ ${separator}
                 <div className="absolute bottom-6 right-8 flex gap-2 z-20">
                     <button 
                       onClick={handleCopy}
-                      className={`text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] ${isRejected ? 'border-[#D13627] text-[#D13627] hover:bg-[#D13627]' : 'border-black text-black hover:bg-black'}`}
+                      className="text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] border-black text-black hover:bg-black"
                     >
                       {copied ? "COPIED" : "COPY"}
                     </button>
                     <button 
                       onClick={handleExport}
-                      className={`text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] ${isRejected ? 'border-[#D13627] text-[#D13627] hover:bg-[#D13627]' : 'border-black text-black hover:bg-black'}`}
+                      className="text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] border-black text-black hover:bg-black"
                     >
                       EXPORT
                     </button>
