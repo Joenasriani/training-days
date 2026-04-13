@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { Terminal, Sparkles } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
 
@@ -52,8 +51,6 @@ export const AICard: React.FC = () => {
     setIsRejected(false);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      
       // Prepare context from existing courses to ground the AI in the specific style
       const courseContext = COURSES_DATA.map(c => 
         `Course: ${c.title.replace('\n', ' ')} (${c.category})\nDescription: ${c.description}\nLevels: ${c.levels.map(l => l.name).join(', ')}`
@@ -135,14 +132,22 @@ export const AICard: React.FC = () => {
         3. [Outcome 3]
       `;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
+      const response = await fetch("/api/generate-syllabus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, level, days, hours, prompt }),
       });
 
-      const text = response.text;
-      
-      if (text && text.startsWith("REJECTION_MODE:")) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        const msg = data?.error ?? "Generation failed";
+        throw new Error(msg);
+      }
+
+      const text: string = data.text ?? "";
+
+      if (text.startsWith("REJECTION_MODE:")) {
         setIsRejected(true);
         setResult(text.replace("REJECTION_MODE:", "").trim());
       } else {
