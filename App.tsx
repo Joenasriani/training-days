@@ -106,7 +106,7 @@ export default function App() {
             
             {/* Left: Logo & Copyright */}
             <div className="flex flex-col gap-2 w-full md:w-1/4">
-              <div className="w-8 h-8 bg-black"></div>
+              <div className="w-8 h-8 bg-[#D13627]"></div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-black">
                 &copy; 2025 Training Days.<br/>International Design System.
               </p>
