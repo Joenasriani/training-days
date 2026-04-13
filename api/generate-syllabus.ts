@@ -7,7 +7,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const key = process.env.TRAININGDAYS_API;
   if (!key) {
-    return res.status(500).json({ error: "Server configuration error: TRAININGDAYS_API is not set." });
+    return res.status(500).json({ error: "Server configuration error: TRAININGDAYS_API is not set.", code: "MISSING_API_KEY" });
   }
 
   const { topic, prompt } = req.body ?? {};
@@ -44,15 +44,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }),
     });
   } catch (err) {
-    return res.status(502).json({ error: "Failed to reach OpenRouter. Please try again later." });
+    return res.status(502).json({ error: "Failed to reach OpenRouter. Please try again later.", code: "NETWORK_ERROR" });
   }
 
   if (!openRouterRes.ok) {
     const detail = await openRouterRes.text().catch(() => "");
     if (openRouterRes.status === 401 || openRouterRes.status === 403) {
-      return res.status(502).json({ error: "OpenRouter authentication failed. Check TRAININGDAYS_API configuration." });
+      return res.status(502).json({ error: "OpenRouter authentication failed. Check TRAININGDAYS_API configuration.", code: "AUTH_FAILED" });
     }
-    return res.status(502).json({ error: "OpenRouter request failed.", detail });
+    return res.status(502).json({ error: "OpenRouter request failed.", code: "UPSTREAM_ERROR", detail });
   }
 
   const data = await openRouterRes.json();

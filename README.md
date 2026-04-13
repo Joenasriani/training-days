@@ -42,3 +42,42 @@ The **AI Card** feature generates detailed course syllabi using [OpenRouter](htt
 | Variable | Required | Description |
 |---|---|---|
 | `TRAININGDAYS_API` | Yes (server-side only) | OpenRouter API key. **Never** use a `VITE_` prefix — keep it server-side. |
+
+## Troubleshooting
+
+### "Server Not Configured" message in the AI Card
+The serverless function cannot find the `TRAININGDAYS_API` environment variable.
+
+**On Vercel:**
+1. Open your project in the [Vercel Dashboard](https://vercel.com/).
+2. Go to **Settings → Environment Variables**.
+3. Add a new variable:
+   - **Name:** `TRAININGDAYS_API`
+   - **Value:** your OpenRouter API key (starts with `sk-or-…`)
+   - **Environments:** select both **Production** and **Preview** (and **Development** if you use `vercel dev`).
+4. Click **Save**, then trigger a new deployment — environment variable changes only take effect after a redeploy.
+
+**Locally:**
+Create or edit `.env.local` in the repo root:
+```
+TRAININGDAYS_API=your_openrouter_api_key_here
+```
+Then start the app with `vercel dev` (not `pnpm dev`) so the `api/` serverless function runs with your env vars.
+
+### "OpenRouter Authentication Failed" message in the AI Card
+The key is present but OpenRouter rejected it (HTTP 401/403). Check that:
+- The value of `TRAININGDAYS_API` is a valid OpenRouter key.
+- The key has not expired or been revoked in your [OpenRouter account](https://openrouter.ai/keys).
+- The key has access to the `openrouter/auto` model (free tier keys are supported).
+
+After updating the key in Vercel, redeploy the project.
+
+### Testing the API function locally
+Because the AI Card calls a Vercel serverless function (`/api/generate-syllabus`), you **must** use the Vercel CLI for local testing:
+
+```bash
+npm install -g vercel   # install once
+vercel dev              # starts both the frontend and the api/ function
+```
+
+Running `pnpm dev` alone (Vite only) will not serve the `api/` endpoint, and all generation requests will fail with a network error.
