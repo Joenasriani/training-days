@@ -30,7 +30,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isExpanded, onTo
       <div className="p-6 md:p-8 relative z-10">
         {/* Section Header (Very Small Font) */}
         {sectionHeader && (
-          <div className="absolute top-0 left-0 right-0 px-8 py-2">
+          <div className="absolute top-0 left-0 right-0 px-6 md:px-8 py-2">
             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 block mb-2">
               {sectionHeader}
             </span>

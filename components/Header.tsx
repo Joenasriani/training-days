@@ -30,7 +30,7 @@ export const Header: React.FC = () => {
 
   return (
     <header 
-      className="sticky top-0 z-50 bg-[#F5F5F7] border-b border-gray-300 px-8 md:px-16 pt-12 pb-8 flex justify-between items-start transition-shadow duration-100 ease-linear"
+      className="sticky top-0 z-50 bg-[#F5F5F7] border-b border-gray-300 px-4 sm:px-6 md:px-12 pt-8 md:pt-12 pb-6 md:pb-8 flex justify-between items-start gap-4 transition-shadow duration-100 ease-linear"
       style={{ boxShadow: `0 4px 6px rgba(209, 54, 39, ${shadowOpacity})` }}
     >
       <div className="flex flex-col gap-1">
@@ -38,11 +38,11 @@ export const Header: React.FC = () => {
           <div className="w-2 h-2 bg-[#D13627] rounded-full" />
           <span className="text-[9px] font-bold uppercase tracking-widest">Architecture System v3</span>
         </div>
-        <h1 className="text-5xl font-extrabold text-black tracking-tighter leading-[0.9]">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-black tracking-tighter leading-[0.9]">
           TRAINING<br/>DAYS
         </h1>
       </div>
-      <div className="text-[8px] font-bold text-black uppercase tracking-widest border border-black px-2 py-1 hidden sm:block">
+      <div className="text-[8px] font-bold text-black uppercase tracking-widest border border-black px-2 py-1 hidden md:block">
         Corporate Training and Knowledge Development
       </div>
     </header>

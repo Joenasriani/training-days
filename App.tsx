@@ -51,13 +51,13 @@ export default function App() {
       <div className="relative z-10">
         <Header />
         
-        <main className="container mx-auto px-8 md:px-16 py-12 max-w-[1400px]">
+        <main className="container mx-auto px-4 sm:px-6 md:px-12 py-10 md:py-12 max-w-[1400px]">
           
           {/* Introduction / Context Block */}
           <div className="mb-16 border-b border-black pb-12">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
               <div className="md:col-span-10">
-                <p className="text-base text-gray-600 leading-relaxed max-w-3xl md:max-w-6xl font-medium border-l-2 border-[#D13627] pl-6">
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed max-w-3xl md:max-w-6xl font-medium border-l-2 border-[#D13627] pl-4 sm:pl-6">
                   This catalog offers a complete set of well-developed syllabi covering media production, digital experience design, interactive content creation, immersive storytelling, and next-generation digital workflows, all authored by Apex Innovate. The <span className="text-black font-bold">AI Card</span> creates customized syllabi that adjust learning objectives to specific timeframes, skill levels, and educational needs, while consistently maintaining strong academic standards, clarity, and instructional coherence.
                 </p>
               </div>
@@ -77,10 +77,10 @@ export default function App() {
 
           {/* Course Catalog Title */}
           <div className="flex items-center justify-between mb-12 pb-6 border-b-4 border-black">
-            <h2 className="text-4xl md:text-6xl font-extrabold text-black tracking-tighter uppercase">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-black tracking-tighter uppercase">
               Index
             </h2>
-            <span className="text-xs font-bold uppercase tracking-widest bg-[#D13627] text-white px-2 py-1">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest bg-[#D13627] text-white px-2 py-1">
               {String(COURSES_DATA.length).padStart(2, '0')} Modules
             </span>
           </div>
@@ -102,24 +102,24 @@ export default function App() {
         </main>
 
         <footer className="border-t border-gray-300 py-12 bg-white mt-24">
-          <div className="container mx-auto px-8 md:px-16 flex flex-col md:flex-row justify-between items-end gap-8 md:gap-4">
+          <div className="container mx-auto px-4 sm:px-6 md:px-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-8 md:gap-4">
             
             {/* Left: Logo & Copyright */}
             <div className="flex flex-col gap-2 w-full md:w-1/4">
               <div className="w-8 h-8 bg-[#D13627]"></div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-black">
+              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-black">
                 &copy; 2025 Training Days.<br/>International Design System.
               </p>
             </div>
 
             {/* Center: Legal Text */}
-            <p className="text-[8px] text-gray-400 text-center w-full md:w-1/2 px-4 order-first md:order-none mb-4 md:mb-0">
+            <p className="text-[10px] sm:text-xs text-gray-500 text-left md:text-center w-full md:w-1/2 px-0 md:px-4 order-last md:order-none mb-0">
               All materials in this app are the exclusive intellectual property of Apex Innovate. No copying, teaching, distribution, or use in any academic, corporate, governmental, or training environment is permitted without prior approval or written consent from the owner. Unauthorized use may result in legal action and financial penalties determined by the owner.
             </p>
 
             {/* Right: Status */}
-            <div className="text-right w-full md:w-1/4">
-              <p className="text-[10px] font-mono text-gray-500">
+            <div className="text-left md:text-right w-full md:w-1/4">
+              <p className="text-[10px] sm:text-xs font-mono text-gray-500">
                 STATUS: OPERATIONAL<br/>
                 VER: 3.0.0
               </p>
