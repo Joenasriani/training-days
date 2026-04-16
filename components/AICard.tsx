@@ -4,7 +4,7 @@ import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
 import { generateSyllabus } from '../utils';
 
-const TECHNICAL_FAILURE_CODES = new Set(["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR", "UNKNOWN"]);
+const TECHNICAL_FAILURE_CODES = new Set(["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR"]);
 
 const legacyCopyText = (text: string) => {
   const textarea = document.createElement('textarea');
@@ -147,7 +147,7 @@ export const AICard: React.FC = () => {
         body: JSON.stringify({ topic: normalizedTopic, level, days, hours, prompt }),
       });
       const data = await response.json().catch((error) => {
-        console.warn("Failed to parse syllabus API response as JSON", error);
+        console.warn("Failed to parse syllabus API response as JSON. Proceeding with safe fallback behavior.", error);
         return {};
       });
 
@@ -233,7 +233,7 @@ ${separator}
     };
     const showCopyFailure = () => {
       setErrorCode("COPY_FAILED");
-      setErrorMessage("Copy failed in this browser context. Please copy the syllabus manually from the output panel.");
+      setErrorMessage("Copy failed in this browser context. Please manually select and copy the syllabus text displayed above.");
     };
 
     if (navigator.clipboard?.writeText) {

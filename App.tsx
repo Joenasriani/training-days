@@ -113,7 +113,7 @@ export default function App() {
             </div>
 
             {/* Center: Legal Text */}
-            <p className="text-sm text-gray-500 text-left md:text-center w-full md:w-1/2 px-0 md:px-4 order-last md:order-none mb-0">
+            <p className="text-sm text-gray-600 text-left md:text-center w-full md:w-1/2 px-0 md:px-4 order-last md:order-none mb-0">
               All materials in this app are the exclusive intellectual property of Apex Innovate. No copying, teaching, distribution, or use in any academic, corporate, governmental, or training environment is permitted without prior approval or written consent from the owner. Unauthorized use may result in legal action and financial penalties determined by the owner.
             </p>
 
