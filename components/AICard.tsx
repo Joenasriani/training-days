@@ -4,8 +4,26 @@ import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
 import { generateSyllabus } from '../utils';
 
+const TECHNICAL_FAILURE_CODES = new Set(["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR", "UNKNOWN"]);
+
+const legacyCopyText = (text: string) => {
+  const textarea = document.createElement('textarea');
+  try {
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    return document.execCommand('copy');
+  } finally {
+    if (textarea.parentNode) {
+      textarea.parentNode.removeChild(textarea);
+    }
+  }
+};
+
 export const AICard: React.FC = () => {
-  const technicalFailureCodes = new Set(["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR", "UNKNOWN"]);
   const [topic, setTopic] = useState("");
   const [level, setLevel] = useState("Introductory");
   const [days, setDays] = useState(5);
@@ -135,7 +153,7 @@ export const AICard: React.FC = () => {
 
       if (!response.ok) {
         const code: string = data?.code ?? "UNKNOWN";
-        const isTechnicalFailure = technicalFailureCodes.has(code);
+        const isTechnicalFailure = TECHNICAL_FAILURE_CODES.has(code);
         if (isTechnicalFailure) {
           setResult(generateSyllabus(normalizedTopic, level, days, hours));
           return;
@@ -217,26 +235,10 @@ ${separator}
       setErrorCode("COPY_FAILED");
       setErrorMessage("Copy failed in this browser context. Please copy the syllabus manually from the output panel.");
     };
-    const legacyCopy = () => {
-      const textarea = document.createElement('textarea');
-      try {
-        textarea.value = fullText;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        return document.execCommand('copy');
-      } finally {
-        if (textarea.parentNode) {
-          textarea.parentNode.removeChild(textarea);
-        }
-      }
-    };
 
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(fullText).then(markCopied).catch(() => {
-        if (legacyCopy()) {
+        if (legacyCopyText(fullText)) {
           markCopied();
           return;
         }
@@ -244,7 +246,7 @@ ${separator}
       });
       return;
     }
-    if (legacyCopy()) {
+    if (legacyCopyText(fullText)) {
       markCopied();
       return;
     }
