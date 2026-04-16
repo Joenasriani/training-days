@@ -5,6 +5,7 @@ import { COURSES_DATA } from '../constants';
 import { generateSyllabus } from '../utils';
 
 export const AICard: React.FC = () => {
+  const technicalFailureCodes = new Set(["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR", "UNKNOWN"]);
   const [topic, setTopic] = useState("");
   const [level, setLevel] = useState("Introductory");
   const [days, setDays] = useState(5);
@@ -127,11 +128,14 @@ export const AICard: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: normalizedTopic, level, days, hours, prompt }),
       });
-      const data = await response.json().catch(() => ({}));
+      const data = await response.json().catch((error) => {
+        console.warn("Failed to parse syllabus API response as JSON", error);
+        return {};
+      });
 
       if (!response.ok) {
         const code: string = data?.code ?? "UNKNOWN";
-        const isTechnicalFailure = ["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR", "UNKNOWN"].includes(code);
+        const isTechnicalFailure = technicalFailureCodes.has(code);
         if (isTechnicalFailure) {
           setResult(generateSyllabus(normalizedTopic, level, days, hours));
           return;
@@ -215,15 +219,19 @@ ${separator}
     };
     const legacyCopy = () => {
       const textarea = document.createElement('textarea');
-      textarea.value = fullText;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      const copiedSuccessfully = document.execCommand('copy');
-      document.body.removeChild(textarea);
-      return copiedSuccessfully;
+      try {
+        textarea.value = fullText;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        return document.execCommand('copy');
+      } finally {
+        if (textarea.parentNode) {
+          textarea.parentNode.removeChild(textarea);
+        }
+      }
     };
 
     if (navigator.clipboard?.writeText) {
