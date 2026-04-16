@@ -1,7 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Terminal, Sparkles } from 'lucide-react';
 import { jsPDF } from "jspdf";
 import { COURSES_DATA } from '../constants';
+import { generateSyllabus } from '../utils';
+
+const TECHNICAL_FAILURE_CODES = new Set(["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR"]);
+
+const legacyCopyText = (text: string) => {
+  const textarea = document.createElement('textarea');
+  try {
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    return document.execCommand('copy');
+  } finally {
+    if (textarea.parentNode) {
+      textarea.parentNode.removeChild(textarea);
+    }
+  }
+};
 
 export const AICard: React.FC = () => {
   const [topic, setTopic] = useState("");
@@ -13,8 +33,6 @@ export const AICard: React.FC = () => {
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-
-  const resultRef = useRef<HTMLDivElement>(null);
 
   const playInputClick = (freqMultiplier: number = 1) => {
     try {
@@ -46,7 +64,8 @@ export const AICard: React.FC = () => {
   };
 
   const handleGenerate = async () => {
-    if (!topic) return;
+    const normalizedTopic = topic.trim();
+    if (!normalizedTopic) return;
     setIsGenerating(true);
     setResult(null);
     setErrorCode(null);
@@ -61,7 +80,7 @@ export const AICard: React.FC = () => {
       const prompt = `
         You are the "Training Days" Curated Curriculum Engine, managed by Apex Innovate.
 
-        The user has requested a syllabus for: "${topic}".
+        The user has requested a syllabus for: "${normalizedTopic}".
 
         Step 1 – Semantic match check:
         Review the existing Training Days courses listed below. If the requested topic is semantically
@@ -125,29 +144,36 @@ export const AICard: React.FC = () => {
       const response = await fetch("/api/generate-syllabus", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, level, days, hours, prompt }),
+        body: JSON.stringify({ topic: normalizedTopic, level, days, hours, prompt }),
       });
-
-      const data = await response.json();
+      const data = await response.json().catch((error) => {
+        console.warn("Failed to parse syllabus API response as JSON. Proceeding with safe fallback behavior.", error);
+        return {};
+      });
 
       if (!response.ok) {
         const code: string = data?.code ?? "UNKNOWN";
+        const isTechnicalFailure = TECHNICAL_FAILURE_CODES.has(code);
+        if (isTechnicalFailure) {
+          setResult(generateSyllabus(normalizedTopic, level, days, hours));
+          return;
+        }
         const msg: string = data?.error ?? "Generation failed";
-        const err = new Error(msg);
-        (err as any).code = code;
-        throw err;
+        throw new Error(msg);
       }
 
       const text: string = data.text ?? "";
-
-      setResult(text);
+      setResult(text.trim() ? text : generateSyllabus(normalizedTopic, level, days, hours));
 
     } catch (error) {
-      console.error("Generation failed", error);
-      const code = error instanceof Error && "code" in error ? String((error as Error & { code: string }).code) : "UNKNOWN";
-      const msg = error instanceof Error ? error.message : "An unexpected error occurred.";
-      setErrorCode(code);
-      setErrorMessage(msg);
+      try {
+        setResult(generateSyllabus(normalizedTopic, level, days, hours));
+      } catch {
+        console.error("Generation failed", error);
+        const msg = error instanceof Error ? error.message : "An unexpected error occurred.";
+        setErrorCode("UNKNOWN");
+        setErrorMessage(msg);
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -201,10 +227,30 @@ ${separator}
     if (!result) return;
     const fullText = generateDocumentContent();
 
-    navigator.clipboard.writeText(fullText).then(() => {
+    const markCopied = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    });
+    };
+    const showCopyFailure = () => {
+      setErrorCode("COPY_FAILED");
+      setErrorMessage("Copy failed in this browser context. Please manually select and copy the syllabus text displayed above.");
+    };
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(fullText).then(markCopied).catch(() => {
+        if (legacyCopyText(fullText)) {
+          markCopied();
+          return;
+        }
+        showCopyFailure();
+      });
+      return;
+    }
+    if (legacyCopyText(fullText)) {
+      markCopied();
+      return;
+    }
+    showCopyFailure();
   };
 
   const handleExport = () => {
@@ -314,21 +360,21 @@ ${separator}
 
   return (
     <div className="w-full bg-white border border-black mb-16 shadow-none">
-      <div className="p-8 md:p-12">
+      <div className="p-5 sm:p-8 md:p-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 pb-6 border-b-4 border-black">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Terminal className="w-5 h-5 text-black" />
               <span className="text-xs font-bold uppercase tracking-widest text-black">Generator Protocol</span>
             </div>
-            <h2 className="text-4xl font-extrabold text-black uppercase tracking-tighter">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-black uppercase tracking-tighter">
               The AI Card
             </h2>
           </div>
-          <div className="px-3 py-1.5 bg-[#D13627] text-white text-[10px] font-bold uppercase tracking-widest">
-            Curated Curriculum Engine
+            <div className="px-3 py-1.5 bg-[#D13627] text-white text-[10px] font-bold uppercase tracking-widest self-start md:self-auto">
+              Curated Curriculum Engine
+            </div>
           </div>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Inputs Section */}
@@ -367,7 +413,7 @@ ${separator}
             </div>
 
             {/* Parameters */}
-            <div className="grid grid-cols-2 gap-6 items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
               <div className="space-y-3">
                 <label className="text-[10px] uppercase tracking-widest font-bold text-black block">
                   Duration (Days)
@@ -426,7 +472,7 @@ ${separator}
                 </div>
               </div>
               
-              <div ref={resultRef} className="p-8 pb-24 overflow-y-auto flex-grow custom-scrollbar bg-white relative">
+               <div className="p-4 sm:p-8 pb-24 overflow-y-auto flex-grow custom-scrollbar bg-white relative">
                  {/* Grid background for text area */}
                  <div className="absolute inset-0 pointer-events-none" 
                       style={{ 
@@ -472,6 +518,12 @@ ${separator}
                         <>
                           <p className="text-[#D13627] font-bold uppercase tracking-widest mb-3">Network Error</p>
                           <p className="text-black mb-2">Could not reach OpenRouter. Please check your connection and try again.</p>
+                          {errorMessage && <p className="text-gray-500 mt-1">Details: {errorMessage}</p>}
+                        </>
+                      ) : errorCode === "COPY_FAILED" ? (
+                        <>
+                          <p className="text-[#D13627] font-bold uppercase tracking-widest mb-3">Copy Failed</p>
+                          <p className="text-black mb-2">Automatic copy is not available in this browser context.</p>
                           {errorMessage && <p className="text-gray-500 mt-1">Details: {errorMessage}</p>}
                         </>
                       ) : (
@@ -525,16 +577,18 @@ ${separator}
                 )}
 
                 {/* Buttons - Positioned Absolute Bottom Right */}
-                <div className="absolute bottom-6 right-8 flex gap-2 z-20">
+                <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 flex gap-2 z-20">
                     <button 
                       onClick={handleCopy}
-                      className="text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] border-black text-black hover:bg-black"
+                      disabled={!result}
+                      className="text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] border-black text-black hover:bg-black disabled:text-gray-400 disabled:border-gray-300 disabled:bg-white disabled:hover:bg-white disabled:hover:text-gray-400 disabled:cursor-not-allowed"
                     >
                       {copied ? "COPIED" : "COPY"}
                     </button>
                     <button 
                       onClick={handleExport}
-                      className="text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] border-black text-black hover:bg-black"
+                      disabled={!result}
+                      className="text-[10px] font-bold uppercase bg-white border shadow-sm hover:text-white px-4 py-2 transition-colors min-w-[80px] border-black text-black hover:bg-black disabled:text-gray-400 disabled:border-gray-300 disabled:bg-white disabled:hover:bg-white disabled:hover:text-gray-400 disabled:cursor-not-allowed"
                     >
                       EXPORT
                     </button>
