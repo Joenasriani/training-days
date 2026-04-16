@@ -209,33 +209,38 @@ ${separator}
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     };
+    const showCopyFailure = () => {
+      setErrorCode("COPY_FAILED");
+      setErrorMessage("Copy failed in this browser context. Please copy the syllabus manually from the output panel.");
+    };
+    const legacyCopy = () => {
+      const textarea = document.createElement('textarea');
+      textarea.value = fullText;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const copiedSuccessfully = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return copiedSuccessfully;
+    };
 
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(fullText).then(markCopied).catch(() => {
-        const textarea = document.createElement('textarea');
-        textarea.value = fullText;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        markCopied();
+        if (legacyCopy()) {
+          markCopied();
+          return;
+        }
+        showCopyFailure();
       });
       return;
     }
-
-    const textarea = document.createElement('textarea');
-    textarea.value = fullText;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-    markCopied();
+    if (legacyCopy()) {
+      markCopied();
+      return;
+    }
+    showCopyFailure();
   };
 
   const handleExport = () => {
@@ -503,6 +508,12 @@ ${separator}
                         <>
                           <p className="text-[#D13627] font-bold uppercase tracking-widest mb-3">Network Error</p>
                           <p className="text-black mb-2">Could not reach OpenRouter. Please check your connection and try again.</p>
+                          {errorMessage && <p className="text-gray-500 mt-1">Details: {errorMessage}</p>}
+                        </>
+                      ) : errorCode === "COPY_FAILED" ? (
+                        <>
+                          <p className="text-[#D13627] font-bold uppercase tracking-widest mb-3">Copy Failed</p>
+                          <p className="text-black mb-2">Automatic copy is not available in this browser context.</p>
                           {errorMessage && <p className="text-gray-500 mt-1">Details: {errorMessage}</p>}
                         </>
                       ) : (
