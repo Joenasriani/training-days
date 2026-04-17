@@ -1,10 +1,71 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Terminal, Sparkles } from 'lucide-react';
 import { jsPDF } from "jspdf";
+import DOMPurify from 'dompurify';
 import { COURSES_DATA } from '../constants';
 import { generateSyllabus } from '../utils';
 
 const TECHNICAL_FAILURE_CODES = new Set(["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR"]);
+const ALLOWED_HTML_TAGS = ["h2", "h3", "p", "ul", "ol", "li", "blockquote", "strong", "em", "hr", "br"] as const;
+
+const sanitizeSyllabusHtml = (html: string) => {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [...ALLOWED_HTML_TAGS],
+    ALLOWED_ATTR: [],
+    FORBID_TAGS: ["html", "head", "body", "style", "script"],
+    FORBID_ATTR: ["style", "class", "id"],
+    KEEP_CONTENT: true,
+  }).trim();
+};
+
+const htmlToPlainText = (html: string) => {
+  if (!html.trim()) return "";
+
+  const doc = new DOMParser().parseFromString(html, "text/html");
+
+  const toText = (node: ChildNode): string => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return (node.textContent ?? "").replace(/\s+/g, " ");
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return "";
+
+    const el = node as HTMLElement;
+    const childrenText = Array.from(el.childNodes).map(toText).join("");
+
+    switch (el.tagName.toLowerCase()) {
+      case "h2":
+      case "h3":
+      case "p":
+      case "blockquote":
+        return `${childrenText.trim()}\n\n`;
+      case "ul": {
+        const items = Array.from(el.children)
+          .filter((child) => child.tagName.toLowerCase() === "li")
+          .map((li) => `- ${toText(li).trim()}`)
+          .join("\n");
+        return items ? `${items}\n\n` : "";
+      }
+      case "ol": {
+        const items = Array.from(el.children)
+          .filter((child) => child.tagName.toLowerCase() === "li")
+          .map((li, index) => `${index + 1}. ${toText(li).trim()}`)
+          .join("\n");
+        return items ? `${items}\n\n` : "";
+      }
+      case "li":
+        return childrenText.trim();
+      case "hr":
+        return "\n----------------------------------------\n";
+      case "br":
+        return "\n";
+      default:
+        return childrenText;
+    }
+  };
+
+  const text = Array.from(doc.body.childNodes).map(toText).join("");
+  return text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+};
 
 const legacyCopyText = (text: string) => {
   const textarea = document.createElement('textarea');
@@ -33,6 +94,8 @@ export const AICard: React.FC = () => {
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const sanitizedResult = useMemo(() => (result ? sanitizeSyllabusHtml(result) : ""), [result]);
+  const plainTextResult = useMemo(() => htmlToPlainText(sanitizedResult), [sanitizedResult]);
 
   const playInputClick = (freqMultiplier: number = 1) => {
     try {
@@ -108,37 +171,14 @@ export const AICard: React.FC = () => {
         - Duration: ${days} Days
         - Intensity: ${hours} Hours per day
 
-        Format requirements:
-        Strictly follow this plain text template structure (do not use markdown bolding like ** or ##).
-        DO NOT include the Course Ref, Trainer, Level, Duration, or Hours headers. Start directly with COURSE OVERVIEW.
-
-        COURSE OVERVIEW:
-        [A professional paragraph describing the course, its audience, and methodology.]
-
-        ------------------------------------------------------------
-
-        SYLLABUS (TOPICS):
-        - [Topic 1]
-        - [Topic 2]
-        ...
-
-        ------------------------------------------------------------
-
-        MODULES (DETAILED):
-        MODULE 01: [TITLE UPPERCASE]
-           Focus: [Description]
-
-        MODULE 02: [TITLE UPPERCASE]
-           Focus: [Description]
-
-        (Generate enough modules to cover the duration. Roughly 1 module per half-day or day depending on intensity.)
-
-        ------------------------------------------------------------
-
-        OUTCOMES:
-        1. [Outcome 1]
-        2. [Outcome 2]
-        3. [Outcome 3]
+        Output format requirements (HTML ONLY):
+        - Return valid HTML only. Do NOT return Markdown.
+        - Allowed tags only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <blockquote>, <strong>, <em>, <hr>, <br>.
+        - Disallowed: <html>, <head>, <body>, <style>, <script>, inline styles, classes, ids, images, links.
+        - Start with a top-level heading exactly like: <h2>Course Overview</h2>.
+        - Include sections for Syllabus, Modules, and Outcomes using semantic headings and lists.
+        - Keep language professional and concise.
+        - Generate enough modules to cover the duration (roughly 1 module per half-day or day depending on intensity).
       `;
 
       const response = await fetch("/api/generate-syllabus", {
@@ -211,7 +251,7 @@ TOTAL LOAD:      ${days * hours} CONTACT HOURS
 
 ${subSeparator}
 
-${result}
+${plainTextResult}
 
 ${separator}
 INTELLECTUAL PROPERTY NOTICE:
@@ -318,7 +358,7 @@ ${separator}
 
     // --- CONTENT BODY ---
     doc.setFontSize(10);
-    const splitText = doc.splitTextToSize(result, maxLineWidth);
+    const splitText = doc.splitTextToSize(plainTextResult, maxLineWidth);
     
     splitText.forEach((line: string) => {
       // Check if we need a new page
@@ -570,9 +610,10 @@ ${separator}
                         <div className="my-6 border-b border-dashed border-black/20 w-full"></div>
                      </div>
 
-                     <pre className="font-mono text-xs whitespace-pre-wrap leading-[24px] text-black">
-                        {result}
-                     </pre>
+                     <div
+                        className="text-sm leading-7 text-black [&_h2]:text-xl [&_h2]:font-extrabold [&_h2]:tracking-tight [&_h2]:mb-3 [&_h3]:text-base [&_h3]:font-bold [&_h3]:uppercase [&_h3]:tracking-wide [&_h3]:text-gray-800 [&_h3]:mt-5 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_li]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:border-[#D13627] [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-700 [&_blockquote]:my-4 [&_strong]:font-bold [&_em]:italic [&_hr]:my-5 [&_hr]:border-black/20"
+                        dangerouslySetInnerHTML={{ __html: sanitizedResult }}
+                     />
                   </div>
                 )}
 
