@@ -32,6 +32,7 @@ export const AICard: React.FC = () => {
   const [result, setResult] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isFallbackMode, setIsFallbackMode] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const playInputClick = (freqMultiplier: number = 1) => {
@@ -70,6 +71,7 @@ export const AICard: React.FC = () => {
     setResult(null);
     setErrorCode(null);
     setErrorMessage(null);
+    setIsFallbackMode(false);
 
     try {
       // Prepare context from existing courses for semantic matching and style reference
@@ -155,6 +157,9 @@ export const AICard: React.FC = () => {
         const code: string = data?.code ?? "UNKNOWN";
         const isTechnicalFailure = TECHNICAL_FAILURE_CODES.has(code);
         if (isTechnicalFailure) {
+          setErrorCode(code);
+          setErrorMessage(typeof data?.error === "string" ? data.error : "Live AI generation is currently unavailable.");
+          setIsFallbackMode(true);
           setResult(generateSyllabus(normalizedTopic, level, days, hours));
           return;
         }
@@ -163,16 +168,28 @@ export const AICard: React.FC = () => {
       }
 
       const text: string = data.text ?? "";
-      setResult(text.trim() ? text : generateSyllabus(normalizedTopic, level, days, hours));
+      if (text.trim()) {
+        setResult(text);
+        return;
+      }
+      setErrorCode("UPSTREAM_ERROR");
+      setErrorMessage("Live AI returned an empty response. A local syllabus was generated instead.");
+      setIsFallbackMode(true);
+      setResult(generateSyllabus(normalizedTopic, level, days, hours));
 
     } catch (error) {
       try {
+        const msg = error instanceof Error ? error.message : "An unexpected error occurred.";
+        setErrorCode("NETWORK_ERROR");
+        setErrorMessage(msg);
+        setIsFallbackMode(true);
         setResult(generateSyllabus(normalizedTopic, level, days, hours));
       } catch {
         console.error("Generation failed", error);
         const msg = error instanceof Error ? error.message : "An unexpected error occurred.";
         setErrorCode("UNKNOWN");
         setErrorMessage(msg);
+        setIsFallbackMode(false);
       }
     } finally {
       setIsGenerating(false);
@@ -539,6 +556,15 @@ ${separator}
 
                 {result && !isGenerating && (
                   <div className="relative z-10">
+                     {isFallbackMode && (
+                      <div className="mb-6 border border-[#D13627]/30 bg-[#fff6f5] px-4 py-3 text-[11px] leading-relaxed text-black">
+                        <p className="font-bold uppercase tracking-widest text-[#D13627] mb-1">Fallback Mode Active</p>
+                        <p>
+                          Live AI generation was unavailable, so this syllabus was generated locally.{" "}
+                          {errorMessage ? `Reason: ${errorMessage}` : ""}
+                        </p>
+                      </div>
+                    )}
                      {/* Header constructed in React for layout control */}
                      <div className="font-mono text-xs text-black mb-6">
                         <div className="flex justify-between items-start">

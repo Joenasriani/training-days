@@ -10,11 +10,11 @@ The **AI Card** feature generates detailed course syllabi using [OpenRouter](htt
 
 ## Run Locally
 
-**Prerequisites:** Node.js, pnpm (or npm)
+**Prerequisites:** Node.js 22+, npm (pnpm also works)
 
 1. Install dependencies:
    ```
-   pnpm install
+   npm ci
    ```
 2. Set the `TRAININGDAYS_API` environment variable in `.env.local`:
    ```
@@ -22,11 +22,24 @@ The **AI Card** feature generates detailed course syllabi using [OpenRouter](htt
    ```
 3. Run the app:
    ```
-   pnpm dev
+   npm run dev
    ```
 
 > **Note:** The AI Card requires the Vercel CLI (`vercel dev`) to run the serverless API function locally.  
-> To test without it, run `vercel dev` instead of `pnpm dev`.
+> To test the real API end-to-end, run `vercel dev` instead of `npm run dev`.  
+> If the API is unavailable, the UI now clearly indicates **Fallback Mode** and generates a local syllabus template.
+
+## Run in Codespaces
+
+This repo includes a `.devcontainer/devcontainer.json` setup.
+
+1. Open the repository in GitHub Codespaces.
+2. Wait for `postCreateCommand` to finish (`npm ci` runs automatically).
+3. Start the app:
+   ```bash
+   npm run dev
+   ```
+4. Use forwarded port **3000** preview.
 
 ## Deploy to Vercel
 
@@ -62,7 +75,7 @@ Create or edit `.env.local` in the repo root:
 ```
 TRAININGDAYS_API=your_openrouter_api_key_here
 ```
-Then start the app with `vercel dev` (not `pnpm dev`) so the `api/` serverless function runs with your env vars.
+Then start the app with `vercel dev` (not `npm run dev`) so the `api/` serverless function runs with your env vars.
 
 ### "OpenRouter Authentication Failed" message in the AI Card
 The key is present but OpenRouter rejected it (HTTP 401/403). Check that:
@@ -80,4 +93,4 @@ npm install -g vercel   # install once
 vercel dev              # starts both the frontend and the api/ function
 ```
 
-Running `pnpm dev` alone (Vite only) will not serve the `api/` endpoint, and all generation requests will fail with a network error.
+Running `npm run dev` alone (Vite only) will not serve the `api/` endpoint, and all generation requests will fail with a network error.
