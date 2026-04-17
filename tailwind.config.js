@@ -20,7 +20,8 @@ export default {
         brand: {
           orange: '#D13627',
           black: '#000000',
-          bg: '#F5F5F7'
+          bg: '#F5F5F7',
+          alert: '#fff6f5'
         }
       }
     },

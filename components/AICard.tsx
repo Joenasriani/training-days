@@ -556,9 +556,9 @@ ${separator}
 
                 {result && !isGenerating && (
                   <div className="relative z-10">
-                     {isFallbackMode && (
-                      <div className="mb-6 border border-[#D13627]/30 bg-[#fff6f5] px-4 py-3 text-[11px] leading-relaxed text-black">
-                        <p className="font-bold uppercase tracking-widest text-[#D13627] mb-1">Fallback Mode Active</p>
+                    {isFallbackMode && (
+                      <div className="mb-6 border border-brand-orange/30 bg-brand-alert px-4 py-3 text-[11px] leading-relaxed text-black">
+                        <p className="font-bold uppercase tracking-widest text-brand-orange mb-1">Fallback Mode Active</p>
                         <p>
                           Live AI generation was unavailable, so this syllabus was generated locally.{" "}
                           {errorMessage ? `Reason: ${errorMessage}` : ""}
