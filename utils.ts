@@ -1,6 +1,14 @@
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 export const generateSyllabus = (topic: string, level: string, days: number, hoursPerDay: number): string => {
-  // Estimate modules (sessions)
   const totalHours = days * hoursPerDay;
+  // Estimate modules (sessions)
   const modulesCount = Math.ceil(totalHours / 2);
   
   // --- 1. Deduce Audience ---
@@ -28,6 +36,9 @@ export const generateSyllabus = (topic: string, level: string, days: number, hou
   };
 
   const keywords = levelKeywords[level] || levelKeywords["Introductory"];
+  const safeTopic = escapeHtml(topic);
+  const safeLevel = escapeHtml(level.toLowerCase());
+  const safeAudience = escapeHtml(audience);
   
   let modules: string[] = [];
   let syllabusTitles: string[] = [];
@@ -35,14 +46,16 @@ export const generateSyllabus = (topic: string, level: string, days: number, hou
   for (let i = 1; i <= modulesCount; i++) {
     const keyword = keywords[i % keywords.length];
     const title = `${keyword} of ${topic}: Session ${i}`;
-    syllabusTitles.push(title);
-    modules.push(`<li><strong>Module ${String(i).padStart(2, '0')}:</strong> ${title.toUpperCase()}<br/><em>Focus:</em> Practical application of ${keyword.toLowerCase()} within ${topic}. Students will examine case studies and perform exercises to solidify understanding.</li>`);
+    const safeTitle = escapeHtml(title);
+    const safeKeyword = escapeHtml(keyword.toLowerCase());
+    syllabusTitles.push(safeTitle);
+    modules.push(`<li><strong>Module ${String(i).padStart(2, '0')}:</strong> ${escapeHtml(title.toUpperCase())}<br/><em>Focus:</em> Practical application of ${safeKeyword} within ${safeTopic}. Students will examine case studies and perform exercises to solidify understanding.</li>`);
   }
 
   // --- 3. Construct Academic HTML Format ---
   return `
 <h2>Course Overview</h2>
-<p>This curriculum provides a ${level.toLowerCase()} examination of ${topic}. Designed specifically for ${audience}, the program prioritizes practical competence and theoretical soundness. Participants will acquire essential skills through structured instruction, ensuring they can apply these concepts directly to professional scenarios.</p>
+<p>This curriculum provides a ${safeLevel} examination of ${safeTopic}. Designed specifically for ${safeAudience}, the program prioritizes practical competence and theoretical soundness. Participants will acquire essential skills through structured instruction, ensuring they can apply these concepts directly to professional scenarios.</p>
 <hr/>
 <h3>Syllabus</h3>
 <ul>
@@ -54,7 +67,7 @@ ${modules.join('\n')}
 </ol>
 <h3>Outcomes</h3>
 <ol>
-<li>Participants will demonstrate competence in ${topic} at a ${level.toLowerCase()} standard.</li>
+<li>Participants will demonstrate competence in ${safeTopic} at a ${safeLevel} standard.</li>
 <li>The cohort will be able to apply technical and theoretical knowledge to solve real-world problems.</li>
 <li>Graduates will possess the necessary skills to integrate these methodologies into their professional workflows.</li>
 </ol>

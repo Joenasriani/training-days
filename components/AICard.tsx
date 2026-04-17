@@ -6,7 +6,9 @@ import { COURSES_DATA } from '../constants';
 import { generateSyllabus } from '../utils';
 
 const TECHNICAL_FAILURE_CODES = new Set(["MISSING_API_KEY", "AUTH_FAILED", "NETWORK_ERROR", "UPSTREAM_ERROR"]);
-const ALLOWED_HTML_TAGS = ["h2", "h3", "p", "ul", "ol", "li", "blockquote", "strong", "em", "hr", "br"] as const;
+const ALLOWED_HTML_TAGS = ["h2", "h3", "p", "ul", "ol", "li", "blockquote", "strong", "em", "hr", "br"];
+const PLAIN_TEXT_SEPARATOR = "----------------------------------------";
+const RICH_TEXT_OUTPUT_CLASSES = "text-sm leading-7 text-black [&_h2]:text-xl [&_h2]:font-extrabold [&_h2]:tracking-tight [&_h2]:mb-3 [&_h3]:text-base [&_h3]:font-bold [&_h3]:uppercase [&_h3]:tracking-wide [&_h3]:text-gray-800 [&_h3]:mt-5 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_li]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:border-[#D13627] [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-700 [&_blockquote]:my-4 [&_strong]:font-bold [&_em]:italic [&_hr]:my-5 [&_hr]:border-black/20";
 
 const sanitizeSyllabusHtml = (html: string) => {
   return DOMPurify.sanitize(html, {
@@ -25,7 +27,7 @@ const htmlToPlainText = (html: string) => {
 
   const toText = (node: ChildNode): string => {
     if (node.nodeType === Node.TEXT_NODE) {
-      return (node.textContent ?? "").replace(/\s+/g, " ");
+      return (node.textContent ?? "").replace(/[ \t]+/g, " ");
     }
     if (node.nodeType !== Node.ELEMENT_NODE) return "";
 
@@ -55,7 +57,7 @@ const htmlToPlainText = (html: string) => {
       case "li":
         return childrenText.trim();
       case "hr":
-        return "\n----------------------------------------\n";
+        return `\n${PLAIN_TEXT_SEPARATOR}\n`;
       case "br":
         return "\n";
       default:
@@ -94,8 +96,14 @@ export const AICard: React.FC = () => {
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const sanitizedResult = useMemo(() => (result ? sanitizeSyllabusHtml(result) : ""), [result]);
-  const plainTextResult = useMemo(() => htmlToPlainText(sanitizedResult), [sanitizedResult]);
+  const { sanitizedResult, plainTextResult } = useMemo(() => {
+    if (!result) return { sanitizedResult: "", plainTextResult: "" };
+    const sanitized = sanitizeSyllabusHtml(result);
+    return {
+      sanitizedResult: sanitized,
+      plainTextResult: htmlToPlainText(sanitized),
+    };
+  }, [result]);
 
   const playInputClick = (freqMultiplier: number = 1) => {
     try {
@@ -611,7 +619,7 @@ ${separator}
                      </div>
 
                      <div
-                        className="text-sm leading-7 text-black [&_h2]:text-xl [&_h2]:font-extrabold [&_h2]:tracking-tight [&_h2]:mb-3 [&_h3]:text-base [&_h3]:font-bold [&_h3]:uppercase [&_h3]:tracking-wide [&_h3]:text-gray-800 [&_h3]:mt-5 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_li]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:border-[#D13627] [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-700 [&_blockquote]:my-4 [&_strong]:font-bold [&_em]:italic [&_hr]:my-5 [&_hr]:border-black/20"
+                        className={RICH_TEXT_OUTPUT_CLASSES}
                         dangerouslySetInnerHTML={{ __html: sanitizedResult }}
                      />
                   </div>
