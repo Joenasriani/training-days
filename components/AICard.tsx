@@ -516,7 +516,7 @@ ${separator}
                    </div>
                 )}
 
-                {errorCode && !isGenerating && (
+                {errorCode && !result && !isGenerating && (
                   <div className="relative z-10 font-mono text-xs">
                     <div className="border border-gray-300 p-6">
                       {errorCode === "MISSING_API_KEY" ? (
@@ -557,7 +557,7 @@ ${separator}
                 {result && !isGenerating && (
                   <div className="relative z-10">
                     {isFallbackMode && (
-                      <div className="mb-6 border border-brand-orange/30 bg-brand-alert px-4 py-3 text-[11px] leading-relaxed text-black">
+                      <div className="mb-6 border border-brand-orange/30 bg-brand-alert px-4 py-3 text-xs leading-relaxed text-black">
                         <p className="font-bold uppercase tracking-widest text-brand-orange mb-1">Fallback Mode Active</p>
                         <p>
                           Live AI generation was unavailable, so this syllabus was generated locally.{" "}
