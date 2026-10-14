@@ -81,3 +81,11 @@ vercel dev              # starts both the frontend and the api/ function
 ```
 
 Running `pnpm dev` alone (Vite only) will not serve the `api/` endpoint, and all generation requests will fail with a network error.
+
+## Scope
+
+Training Days is a course-catalog and syllabus-generation application. Course entries represent catalog content; their presence does not, by itself, document that each course has been delivered. The AI Card depends on the OpenRouter service and its available models. The configured `openrouter/auto` route does not by itself guarantee a free model or zero-cost generation.
+
+Credit: Joe Nasr
+
+Portfolio: https://joe-nasr-signals.vercel.app/
