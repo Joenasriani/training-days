@@ -68,7 +68,32 @@
       .custom-scrollbar::-webkit-scrollbar-thumb {
         background: #000; 
       }
-    </style>
+    /* BEGIN JOE NASR SIGNALS GLOBAL MATTE - exact current source */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+body::before {
+  z-index: 9998;
+  background: rgba(224, 218, 206, 0.05);
+  -webkit-backdrop-filter: saturate(0.77) contrast(0.935) brightness(0.986);
+  backdrop-filter: saturate(0.77) contrast(0.935) brightness(0.986);
+}
+
+body::after {
+  z-index: 9999;
+  opacity: 0.079;
+  mix-blend-mode: multiply;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+/* END JOE NASR SIGNALS GLOBAL MATTE */
+</style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script>
       if (window.tailwind) {
